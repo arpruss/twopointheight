@@ -76,8 +76,8 @@ public class Results extends SherlockActivity {
 		
 		Log.v("TwoPoint", "angles "+angleLow+" "+angleHigh);
 
-		((TextView)findViewById(R.id.angle0)).setText("Bottom angle: "+degreeFormat.format(angle0*180/Math.PI)+"°");
-		((TextView)findViewById(R.id.angle1)).setText("Top angle: "+degreeFormat.format(angle1*180/Math.PI)+"°");
+		((TextView)findViewById(R.id.angle0)).setText("Bottom angle: "+degreeFormat.format(angleLow*180/Math.PI)+"°");
+		((TextView)findViewById(R.id.angle1)).setText("Top angle: "+degreeFormat.format(angleHigh*180/Math.PI)+"°");
 		
 		recalculate();
 
@@ -124,7 +124,7 @@ public class Results extends SherlockActivity {
 			
 			try {
 				distance = Double.parseDouble(distanceString);
-				if (distance <= EPS)
+				if (distance < EPS)
 					distance = Double.NaN;
 			}
 			catch (NumberFormatException e) {
@@ -148,6 +148,9 @@ public class Results extends SherlockActivity {
 			
 			double height = distance * ( Math.tan(angleHigh) - Math.tan(angleLow) );
 			
+			if (Math.abs(angleLow)<EPS)
+				height += deviceHeight;
+			
 			if (Double.isNaN(estDistance)) {
 				estDistanceText.setVisibility(View.INVISIBLE);
 			}
@@ -161,7 +164,7 @@ public class Results extends SherlockActivity {
 		catch(Exception e) {
 			Log.v("TwoPoint", "invalid data");
 			estDistanceText.setVisibility(View.INVISIBLE);
-			heightText.setText("Invalid data");
+			heightText.setText("Please ensure distance and height are filled out.");
 		}
 	}
 

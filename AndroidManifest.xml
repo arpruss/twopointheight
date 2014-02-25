@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright (C) 2007 The Android Open Source Project
+<!--
+     Copyright (C) 2007 The Android Open Source Project
 
      Licensed under the Apache License, Version 2.0 (the "License");
      you may not use this file except in compliance with the License.
@@ -14,41 +15,59 @@
      limitations under the License.
 -->
 
-<!-- Declare the contents of this Android application.  The namespace
+
+<!--
+     Declare the contents of this Android application.  The namespace
      attribute brings in the Android platform namespace, and the package
      supplies a unique name for the application.  When writing your
      own application, the package name must be changed from "com.example.*"
-     to come from a domain that you own or have control over. -->
+     to come from a domain that you own or have control over.
+-->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    android:versionCode="1"
-    android:versionName="0.01"
-    package="mobi.omegacentauri.twopoint">
+    package="mobi.omegacentauri.twopoint"
+    android:versionCode="2"
+    android:versionName="0.02" >
 
-	<uses-sdk android:minSdkVersion="4" android:targetSdkVersion="14" />
-    <!-- We will request access to the camera, saying we require a camera
-         of some sort but not one with autofocus capability. -->
+    <uses-sdk
+        android:minSdkVersion="5"
+        android:targetSdkVersion="18" />
+
     <uses-permission android:name="android.permission.CAMERA" />
-    <uses-feature android:name="android.hardware.sensor.accelerometer" android:required="true"/>
+
+    <uses-feature
+        android:name="android.hardware.sensor.accelerometer"
+        android:required="true" />
     <uses-feature android:name="android.hardware.camera" />
-    <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
+    <uses-feature
+        android:name="android.hardware.camera.autofocus"
+        android:required="false" />
 
-    <application android:label="Two Point Height"
-        	android:theme="@style/Theme.Sherlock"
-            android:icon="@drawable/icon" >
+    <supports-screens
+        android:largeScreens="true"
+        android:normalScreens="true"
+        android:smallScreens="true"
+        android:xlargeScreens="true" />
 
-        <activity android:name="mobi.omegacentauri.twopoint.TwoPoint" android:label="Two Point Height" 
-            android:screenOrientation="portrait">
+    <application
+        android:icon="@drawable/icon"
+        android:label="Two Point Height"
+        android:theme="@style/Theme.Sherlock" >
+        <activity
+            android:name="mobi.omegacentauri.twopoint.TwoPoint"
+            android:label="Two Point Height"
+            android:screenOrientation="portrait" >
             <intent-filter>
-                            <action android:name="android.intent.action.MAIN" />
+                <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <activity android:name="mobi.omegacentauri.twopoint.Results" android:label="Results" 
-            android:screenOrientation="portrait">
-            </activity>
-
-        
+        <activity
+            android:name="mobi.omegacentauri.twopoint.Results"
+            android:label="Results"
+            android:screenOrientation="portrait" >
+        </activity>
     </application>
+
 </manifest>
