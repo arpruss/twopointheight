@@ -8,6 +8,7 @@ import java.io.InputStreamReader;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.hardware.Camera.Size;
 import android.text.Html;
 
 public class Utils {
@@ -47,6 +48,10 @@ public class Utils {
             public void onCancel(DialogInterface dialog) {} });
         alertDialog.show();
 	}
-	
 
+	public static void swapSize(Size s) {
+		int a = s.width;
+		s.width = s.height;
+		s.height = a;		
+	}	
 }
