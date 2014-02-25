@@ -52,7 +52,7 @@ class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
     public void setCamera(Camera camera, int zoom, boolean portrait) {
         mCamera = camera;
         mPortrait = portrait;
-        if (Build.VERSION.SDK_INT >= 9)
+        if (Build.VERSION.SDK_INT < 9)
         	mPortrait = false; // there are problems at SDK < 9 with portrait mode;
         
         if (mCamera != null) {
