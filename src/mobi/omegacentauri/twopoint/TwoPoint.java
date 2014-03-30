@@ -64,9 +64,10 @@ import com.actionbarsherlock.view.Window;
 public class TwoPoint extends SherlockActivity implements SensorEventListener {
     public static final String ANGLE = "angle";
 	public static final String DEVICE_HEIGHT = "devHeight";
+	private static final String PREF_CAMERA = "cameraMode";
  
 	private CameraPreview mPreview;
-    Camera mCamera;
+    Camera mCamera = null;
     FrameLayout mFrame;
     SharedPreferences mOptions;
     OverlayView mOverlay;
@@ -74,6 +75,9 @@ public class TwoPoint extends SherlockActivity implements SensorEventListener {
 	private double curAngle = 0f;
 	double[] gravity = { 0f, 0f, 0f };
 	private boolean zeroed;
+	int axis;
+	static final int CAMERA_AXIS = 2;
+	static final int PHONE_AXIS = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -107,6 +111,7 @@ public class TwoPoint extends SherlockActivity implements SensorEventListener {
         
         pointCount = 0;
         zeroed = false;
+        axis = mOptions.getBoolean(PREF_CAMERA, true) ? CAMERA_AXIS : PHONE_AXIS;
     }
     
 	@Override
@@ -121,7 +126,9 @@ public class TwoPoint extends SherlockActivity implements SensorEventListener {
         	  curAngle = 0f;
           }
           else {
-        	  curAngle = (float) (Math.asin(-gravity[2]/total));
+        	  curAngle = (float) (Math.asin(gravity[axis]/total));
+        	  if (axis == CAMERA_AXIS)
+        		  curAngle = -curAngle;
           }
           if(mOverlay != null)
         	  mOverlay.setAngle(curAngle);
@@ -133,16 +140,29 @@ public class TwoPoint extends SherlockActivity implements SensorEventListener {
     		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 
     	mFrame.removeAllViews();
-    	
-    	// Create a RelativeLayout container that will hold a SurfaceView,
-        // and set it as the content of our activity.
-        mPreview = new CameraPreview(this);
 
-        mFrame.addView(mPreview);
+		if (mCamera != null) {
+			if (mPreview != null)
+				mPreview.setCamera(null, 0);
+            mCamera.release();
+            mCamera = null;
+		}
+
+		if (axis == CAMERA_AXIS) {
+	    	// Create a RelativeLayout container that will hold a SurfaceView,
+	        // and set it as the content of our activity.
+	        mPreview = new CameraPreview(this);
+	        mFrame.addView(mPreview);
+    	}
+    	else {
+    		mPreview = null;
+    	}
+
         mOverlay = new OverlayView(this);
         mFrame.addView(mOverlay);
         mOverlay.bringToFront();
         mOverlay.setPointCount(pointCount);
+        mOverlay.setAxis(axis);
         
         mOverlay.setOnTouchListener(new View.OnTouchListener() {
 			
@@ -163,6 +183,11 @@ public class TwoPoint extends SherlockActivity implements SensorEventListener {
 			sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
 					SensorManager.SENSOR_DELAY_FASTEST);
 		}
+        
+        if (axis == CAMERA_AXIS) {
+	        mCamera = Camera.open();
+	        mPreview.setCamera(mCamera, 0);
+        }
     }
 
 	protected void addAngle(double curAngle) {
@@ -185,8 +210,6 @@ public class TwoPoint extends SherlockActivity implements SensorEventListener {
         super.onResume();
 
         initViews();
-        mCamera = Camera.open();
-        mPreview.setCamera(mCamera, 0);
     }
 
     @Override
@@ -217,6 +240,14 @@ public class TwoPoint extends SherlockActivity implements SensorEventListener {
         	pointCount = 0;
         	zeroed = false;
         	mOverlay.setPointCount(pointCount);
+        	return true;
+        case R.id.mode:
+        	if (axis == CAMERA_AXIS)
+        		axis = PHONE_AXIS;
+        	else
+        		axis = CAMERA_AXIS;
+        	mOptions.edit().putBoolean(PREF_CAMERA, axis == CAMERA_AXIS).commit();
+        	initViews();
         	return true;
         case R.id.zero:
         	zeroed = true;
