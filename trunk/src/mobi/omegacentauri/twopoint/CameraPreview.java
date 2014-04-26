@@ -21,7 +21,7 @@ import android.view.ViewGroup;
  * support preview sizes at the same aspect ratio as the device's display.
  */
 class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
-    private final String TAG = "Preview";
+    private final String TAG = "CameraPreview";
 
     SurfaceView mSurfaceView;
     SurfaceHolder mHolder;
@@ -57,8 +57,10 @@ class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
         
         if (mCamera != null) {
         	mParams = camera.getParameters();
-        	if (mPortrait) 
-	        	mCamera.setDisplayOrientation(90);
+        	if (mPortrait) {
+        		Log.v(TAG, "display orientation set");
+        		mCamera.setDisplayOrientation(90);
+        	}
         	
         	if (Build.VERSION.SDK_INT >= 8 && mParams.isZoomSupported()) {
         		mParams.setZoom(zoom);
@@ -92,11 +94,19 @@ class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
         	mSupportedPreviewSizes = mParams.getSupportedPreviewSizes();
         	mPreviewSize = getOptimalPreviewSize(mSupportedPreviewSizes, width, height);
 
-//            int previewWidth = width;
+int previewWidth;
+			int previewHeight;
+			//            int previewWidth = width;
 //            int previewHeight = height;
 //            if (mPreviewSize != null) {
-                int previewWidth = mPreviewSize.width;
-                int previewHeight = mPreviewSize.height;
+        	if (mPortrait) {
+                previewWidth = mPreviewSize.height;
+                previewHeight = mPreviewSize.width;
+        	}
+        	else {
+                previewWidth = mPreviewSize.width;
+                previewHeight = mPreviewSize.height;
+        	}
 //            }
 
             // Center the child SurfaceView within the parent.
@@ -104,12 +114,12 @@ class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
                 final int scaledChildWidth = previewWidth * height / previewHeight;
                 child.layout((width - scaledChildWidth) / 2, 0,
                         (width + scaledChildWidth) / 2, height);
-                Log.v("TwoPoint", "scaled Width = "+scaledChildWidth+" height = "+height);
+                Log.v(TAG, "scaled Width = "+scaledChildWidth+" height = "+height);
             } else {
                 final int scaledChildHeight = previewHeight * width / previewWidth;
                 child.layout(0, (height - scaledChildHeight) / 2,
                         width, (height + scaledChildHeight) / 2);
-                Log.v("TwoPoint", "scaled Height = "+scaledChildHeight+" width = "+width);
+                Log.v(TAG, "scaled Height = "+scaledChildHeight+" width = "+width);
             }
         }
     }
@@ -141,7 +151,7 @@ class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
     		h = s;
     	}
     	
-    	Log.v("TwoPoint", "trying for "+w+"x"+h);
+    	Log.v(TAG, "trying for "+w+"x"+h);
     	
         final double ASPECT_TOLERANCE = 0.05;
         double targetRatio = (double) w / h;
@@ -173,7 +183,7 @@ class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
 
         // Try to find an size match aspect ratio and size
         for (Size size : sizes) {
-        	Log.v("TwoPoint", "size: "+size.width+"x"+size.height);
+        	Log.v(TAG, "size: "+size.width+"x"+size.height);
             double ratio = (double) size.width / size.height;
             if (Math.abs(ratio - targetRatio) > ASPECT_TOLERANCE) continue;
             if (Math.abs(size.height - targetHeight) < minDiff) {
@@ -193,10 +203,11 @@ class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
             }
         }
         
-        if (mPortrait) 
-        	Utils.swapSize(optimalSize);
+//        if (mPortrait) {
+//        	Utils.swapSize(optimalSize);
+//        }
 
-    	Log.v("TwoPoint", "optimal size: "+optimalSize.width+"x"+optimalSize.height);
+    	Log.v(TAG, "optimal size: "+optimalSize.width+"x"+optimalSize.height);
         return optimalSize;
     }
 
@@ -204,21 +215,30 @@ class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
         // Now that the size is known, set up the camera parameters and begin
         // the preview.
     	mCamera.stopPreview();
-    	Log.v("TwoPoint", "setPreviewSize "+mPreviewSize.width+"x"+mPreviewSize.height);
+    	Log.v(TAG, "setPreviewSize "+mPreviewSize.width+"x"+mPreviewSize.height);
+
+    	
     	try {
+    		Log.v(TAG, "setting "+mPreviewSize.width+" "+mPreviewSize.height);
     		mParams.setPreviewSize(mPreviewSize.width, mPreviewSize.height);
     		mCamera.setParameters(mParams);
     	} catch (RuntimeException e) {
-    		mPreviewSize = mSupportedPreviewSizes.get(0);
-    		if (mPortrait) {
-    			Utils.swapSize(mPreviewSize);
-    		}
+    		Log.e(TAG, "error setting camera parameters: "+e);
 
-    		mParams.setPreviewSize(mPreviewSize.width, mPreviewSize.height);
-    		mCamera.setParameters(mParams);
+    		mPreviewSize = mSupportedPreviewSizes.get(0); 
+//    		if (mPortrait) {
+//    			Utils.swapSize(mPreviewSize);
+//    		}
+
+    		try {
+		    	mParams.setPreviewSize(mPreviewSize.width, mPreviewSize.height);
+		    	mCamera.setParameters(mParams);
+    		} catch(Exception e2) {
+        		Log.e(TAG, "error setting camera parameters: "+e2);
+    		}
     	}
         mCamera.startPreview();
-    	Log.v("TwoPoint", "picture="+(mCamera.getParameters().getPictureSize().width)+"x"+(mCamera.getParameters().getPictureSize().height));
+    	Log.v(TAG, "picture="+(mCamera.getParameters().getPictureSize().width)+"x"+(mCamera.getParameters().getPictureSize().height));
 
 //        mParams = mCamera.getParameters();
 //        mParams.setPictureSize(mPreviewSize.width, mPreviewSize.height);
