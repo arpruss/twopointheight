@@ -23,6 +23,7 @@ import java.util.List;
 
 import mobi.omegacentauri.twopoint.R;
 
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -189,6 +190,12 @@ public class TwoPoint extends SherlockActivity implements SensorEventListener {
 	        mPreview.setCamera(mCamera, 0);
         }
     }
+    
+	@SuppressLint("NewApi")
+    void safeInvalidateOptionsMenu() {
+		if (Build.VERSION.SDK_INT>=11)
+			invalidateOptionsMenu();    	
+    }
 
 	protected void addAngle(double curAngle) {
 		mOptions.edit().putFloat(ANGLE+pointCount, (float)curAngle).commit();
@@ -196,7 +203,7 @@ public class TwoPoint extends SherlockActivity implements SensorEventListener {
 		if (pointCount >= 2) {
 			pointCount = 0;
 			zeroed = false;
-			invalidateOptionsMenu();
+			safeInvalidateOptionsMenu();
 			startActivity(new Intent(TwoPoint.this, Results.class));
 		}
 		else {
@@ -252,7 +259,7 @@ public class TwoPoint extends SherlockActivity implements SensorEventListener {
         case R.id.zero:
         	zeroed = true;
         	addAngle(0.);
-        	invalidateOptionsMenu();
+        	safeInvalidateOptionsMenu();
         	return true;
         case R.id.licenses:
         	Utils.showLicenses(this);

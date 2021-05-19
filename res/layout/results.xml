@@ -31,7 +31,7 @@
     android:layout_height="wrap_content">
 <TextView
     android:textSize="16sp"
-    android:text="Measured distance: "
+    android:text="Distance to target base (optional): "
     android:layout_width="wrap_content"
     android:layout_height="wrap_content" />
 <EditText
@@ -51,7 +51,7 @@
     android:layout_height="wrap_content">
 <TextView
     android:textSize="16sp"
-    android:text="Device height: "
+    android:text="Camera height: "
     android:layout_width="wrap_content"
     android:layout_height="wrap_content" />
 <EditText
@@ -65,9 +65,27 @@
 	android:layout_height="wrap_content" />
 </LinearLayout>
 
+
 <TextView
     android:id="@+id/height"
-    android:textSize="20sp"
+    android:textSize="30sp"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content" />
+
+<TextView
+    android:id="@+id/message"
+    android:textSize="14sp"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:textColor="#FF0000"
+    android:text=""
+    />
+
+<TextView
+    android:textSize="14sp"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content" 
+    android:text="Note: Use the same units (meters, feet, inches, chains, etc.) for all measurements, and the target height will be in the same unit. In typical use, camera height is close to your own height. If you can measure the distance to the target base, you will get better precision."
+    />
+
 </LinearLayout>

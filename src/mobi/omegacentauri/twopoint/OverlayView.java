@@ -40,6 +40,10 @@ public class OverlayView extends View {
 	private int axis;
 	private Paint bigTextPaint;
 	
+	public static float sp(Context context, float sp) {
+		return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, sp, context.getResources().getDisplayMetrics());
+	}
+	
 	public OverlayView(Context context) {
 		super(context);
 		
@@ -51,13 +55,13 @@ public class OverlayView extends View {
         textPaint.setColor(Color.WHITE);
         textPaint.setAntiAlias(true);
         textPaint.setTypeface(Typeface.SANS_SERIF);
-        textPaint.setTextSize(20);
+        textPaint.setTextSize(sp(context,16));
         
         bigTextPaint = new Paint();
         bigTextPaint.setColor(Color.WHITE);
         bigTextPaint.setAntiAlias(true);
         bigTextPaint.setTypeface(Typeface.SANS_SERIF);
-        bigTextPaint.setTextSize(36);
+        bigTextPaint.setTextSize(sp(context,36));
         
         textBackPaint = new Paint();
         textBackPaint.setColor(Color.DKGRAY);

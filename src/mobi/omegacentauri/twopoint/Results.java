@@ -28,6 +28,7 @@ public class Results extends SherlockActivity {
 	private TextView heightText;
 	private DecimalFormat degreeFormat = new DecimalFormat("#.#");
 	private DecimalFormat distanceFormat = new DecimalFormat("#.###");
+	private TextView messageText;
 	
 	@Override
     public void onCreate(Bundle savedInstanceState) {
@@ -48,6 +49,7 @@ public class Results extends SherlockActivity {
         distanceText = (EditText)findViewById(R.id.distance);
         estDistanceText = (TextView)findViewById(R.id.estDistance);
         heightText = (TextView)findViewById(R.id.height);
+        messageText = (TextView)findViewById(R.id.message);
 	}
 	
 	@Override
@@ -159,12 +161,13 @@ public class Results extends SherlockActivity {
 				estDistanceText.setText("Est. distance: "+distanceFormat.format(estDistance));
 			}
 			
-			heightText.setText("Height: "+distanceFormat.format(height));
+			heightText.setText("Target height: "+distanceFormat.format(height));
+			messageText.setText("");
 		}
 		catch(Exception e) {
 			Log.v("TwoPoint", "invalid data");
 			estDistanceText.setVisibility(View.INVISIBLE);
-			heightText.setText("Please ensure distance and height are filled out.");
+			messageText.setText("Please ensure distance and height are filled out.");
 		}
 	}
 
