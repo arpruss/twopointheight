@@ -85,7 +85,6 @@ public class TwoPoint extends Activity implements SensorEventListener {
 	static final int PHONE_AXIS = 1;
 	static final short[] beep = sinewave(2000, 20, 0.01f);
 
-	boolean haveCameraPermission;
 	private AudioTrack mBeep;
 
 	static private short[] sinewave(float frequency, long duration, float amplitude) {
@@ -97,11 +96,15 @@ public class TwoPoint extends Activity implements SensorEventListener {
 		return samples;
 	}
 
+	boolean haveCameraPermission() {
+		return Build.VERSION.SDK_INT < 23 || PackageManager.PERMISSION_GRANTED == checkSelfPermission("android.permission.CAMERA");
+	}
+
 	@Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        
-        mOptions = PreferenceManager.getDefaultSharedPreferences(this); 
+
+        mOptions = PreferenceManager.getDefaultSharedPreferences(this);
 
         requestWindowFeature(Window.FEATURE_ACTION_BAR);
        // requestWindowFeature(Window.FEATURE_ACTION_BAR_OVERLAY);
@@ -122,14 +125,10 @@ public class TwoPoint extends Activity implements SensorEventListener {
         zeroed = false;
         axis = mOptions.getBoolean(PREF_CAMERA, true) ? CAMERA_AXIS : PHONE_AXIS;
 
-		if (Build.VERSION.SDK_INT >= 23) {
-			if (PackageManager.PERMISSION_GRANTED != checkSelfPermission("android.permission.CAMERA")) {
-				haveCameraPermission = false;
-				Log.v("TPH", "requesting");
-				requestPermissions(new String[] {"android.permission.CAMERA"}, 0);
-			}
+		if (!haveCameraPermission()) {
+			Log.v("TPH", "requesting");
+			requestPermissions(new String[] {"android.permission.CAMERA"}, 0);
 		}
-
 	}
 
     @Override
@@ -137,16 +136,22 @@ public class TwoPoint extends Activity implements SensorEventListener {
 											String[] permissions,
 											int[] grantResults) {
 		Log.v("TPH", "results");
+		boolean haveCameraPermission = false;
     	for (int i=0; i<permissions.length; i++)
-    		if (permissions.equals("android.permission.CAMERA")) {
+    		if (permissions[i].equals("android.permission.CAMERA")) {
 				if (grantResults[i] == PackageManager.PERMISSION_GRANTED) {
 					haveCameraPermission = true;
-					initViews();
-				}
-				else {
-					finish();
 				}
 			}
+		if (haveCameraPermission)
+			initViews();
+		else {
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+				finishAffinity();
+			} else {
+				finish();
+			}
+		}
 	}
 
 
@@ -184,10 +189,11 @@ public class TwoPoint extends Activity implements SensorEventListener {
 		if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN || keyCode == KeyEvent.KEYCODE_VOLUME_UP ) {
 			return true;
 		}
-		return super.onKeyDown(keyCode, event);
+		return super.onKeyUp(keyCode, event);
 	}
 
 	protected void initViews() {
+		Log.v("TPH", "setting up views");
     	if (Build.VERSION.SDK_INT < 9)
     		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 
@@ -203,8 +209,11 @@ public class TwoPoint extends Activity implements SensorEventListener {
 		if (axis == CAMERA_AXIS) {
 	    	// Create a RelativeLayout container that will hold a SurfaceView,
 	        // and set it as the content of our activity.
-			if (haveCameraPermission) {
+			if (haveCameraPermission()) {
+				Log.v("TPH", "opening camera");
+				mCamera = Camera.open();
 				mPreview = new CameraPreview(this);
+				mPreview.setCamera(mCamera, 0);
 				mFrame.addView(mPreview);
 			}
     	}
@@ -238,12 +247,6 @@ public class TwoPoint extends Activity implements SensorEventListener {
 					SensorManager.SENSOR_DELAY_FASTEST);
 		}
         
-        if (axis == CAMERA_AXIS && haveCameraPermission) {
-        	Log.v("TPH", "camera opening");
-	        mCamera = Camera.open();
-	        mPreview.setCamera(mCamera, 0);
-			Log.v("TPH", "camera opened");
-        }
     }
     
 	@SuppressLint("NewApi")
@@ -285,9 +288,7 @@ public class TwoPoint extends Activity implements SensorEventListener {
 				beep.length * 2, AudioTrack.MODE_STATIC);
 		mBeep.write(beep, 0, beep.length);
 
-		haveCameraPermission = true;
-
-        initViews();
+		initViews();
     }
 
     @Override
