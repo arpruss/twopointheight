@@ -51,7 +51,7 @@
     <application
         android:icon="@drawable/icon"
         android:label="Two Point Height"
-        android:theme="@style/Theme.Sherlock" >
+        >
         <activity
             android:name="mobi.omegacentauri.twopoint.TwoPoint"
             android:label="Two Point Height"
