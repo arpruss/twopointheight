@@ -131,13 +131,13 @@ public class OverlayView extends View {
 	public void onDraw(Canvas canvas) {
 		if (! Double.isNaN(angle))
 			drawText(canvas, degreeFormat.format(angle)+"\u00B0","-90\u00B0", 1);
-		drawText(canvas, "Point camera to "+(pointCount==0?"top or bottom":"other end")+" of target and tap screen.",0);
 
 		if (axis == TwoPoint.CAMERA_AXIS) {
+			drawText(canvas, "Point to "+(pointCount==0?"top or bottom":"other end")+" of target and tap screen or press volume buttom.",0);
 			drawCentered(canvas, crossImage);
 		}
 		else {
-			//drawBigText(canvas, "Sight along long side of device.");
+			drawText(canvas, "Sight "+(pointCount==0?"top or bottom":"other end")+" of target and tap screen or press volume button.",0);
 			drawCentered(canvas, phoneImage);
 		}
 	}

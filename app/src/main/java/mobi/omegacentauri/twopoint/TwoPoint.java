@@ -256,11 +256,15 @@ public class TwoPoint extends Activity implements SensorEventListener {
     }
 
     protected void addAngleWithFeedback() {
+		addAngleWithFeedback(curAngle);
+	}
+
+    protected void addAngleWithFeedback(double angle) {
 		mOverlay.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
 		mBeep.stop();
 		mBeep.reloadStaticData();
 		mBeep.play();
-		addAngle(curAngle);
+		addAngle(angle);
 	}
 
 	protected void addAngle(double curAngle) {
@@ -333,7 +337,7 @@ public class TwoPoint extends Activity implements SensorEventListener {
         	return true;
         case R.id.zero:
         	zeroed = true;
-        	addAngle(0.);
+        	addAngleWithFeedback(0.);
         	safeInvalidateOptionsMenu();
         	return true;
         case R.id.licenses:
