@@ -52,6 +52,7 @@
         <activity
             android:name="mobi.omegacentauri.twopoint.TwoPoint"
             android:label="Two Point Height"
+            android:exported="true"
             android:screenOrientation="portrait" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
