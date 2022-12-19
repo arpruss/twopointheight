@@ -25,7 +25,7 @@ public class Results extends Activity {
 	private EditText distanceText;
 	private TextView estDistanceText;
 	private TextView heightText;
-	private DecimalFormat degreeFormat = new DecimalFormat("#.#");
+	private DecimalFormat degreeFormat = new DecimalFormat("#.0");
 	private DecimalFormat distanceFormat = new DecimalFormat("#.###");
 	private TextView messageText;
 	

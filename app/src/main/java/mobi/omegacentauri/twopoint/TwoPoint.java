@@ -80,7 +80,13 @@ public class TwoPoint extends Activity implements SensorEventListener {
     OverlayView mOverlay;
 	private int pointCount;
 	private double curAngle = 0f;
-	double[] gravity = { 0f, 0f, 0f };
+	float[] gravity = { 0f, 0f, 0f };
+	static final int MAX_MOVING_AVERAGE_COUNT = 500;
+	static final long MOVING_AVERAGE_TIME = 200l*1000*1000; //100l*1000l*1000l; // in nanoseconds
+	float[][] gravityHistory = new float[MAX_MOVING_AVERAGE_COUNT][3];
+	long[] timeHistory = new long[MAX_MOVING_AVERAGE_COUNT];
+	static int eventHistoryTail = 0;
+
 	private boolean zeroed;
 	int axis;
 	static final int CAMERA_AXIS = 2;
@@ -162,9 +168,34 @@ public class TwoPoint extends Activity implements SensorEventListener {
 	@Override
 	public void onSensorChanged(SensorEvent event)
     {
-          gravity[0] = 0.9 * gravity[0] + 0.1f * event.values[0];
-          gravity[1] = 0.9 * gravity[1] + 0.1f * event.values[1];
-          gravity[2] = 0.9 * gravity[2] + 0.1f * event.values[2];
+		  gravityHistory[eventHistoryTail][0] = event.values[0];
+		  gravityHistory[eventHistoryTail][1] = event.values[1];
+		  gravityHistory[eventHistoryTail][2] = event.values[2];
+		  long stamp = event.timestamp;
+		  timeHistory[eventHistoryTail] = stamp;
+		  int i = eventHistoryTail;
+		  gravity[0] = 0;
+		  gravity[1] = 0;
+		  gravity[2] = 0;
+		  int count = 0;
+		  do {
+			  if (timeHistory[i] < stamp - MOVING_AVERAGE_TIME) {
+				  break;
+			  }
+			  gravity[0] += gravityHistory[i][0];
+			  gravity[1] += gravityHistory[i][1];
+			  gravity[2] += gravityHistory[i][2];
+			  count++;
+			  i = (MAX_MOVING_AVERAGE_COUNT + i-1) % MAX_MOVING_AVERAGE_COUNT;
+		  } while(i != eventHistoryTail && timeHistory[i] != 0);
+		  eventHistoryTail = (eventHistoryTail + 1) % MAX_MOVING_AVERAGE_COUNT;
+
+		gravity[0] /= count;
+		gravity[1] /= count;
+		gravity[2] /= count;
+//          gravity[0] = 0.9 * gravity[0] + 0.1f * event.values[0];
+//          gravity[1] = 0.9 * gravity[1] + 0.1f * event.values[1];
+//          gravity[2] = 0.9 * gravity[2] + 0.1f * event.values[2];
 
           double total = Math.sqrt(gravity[0]*gravity[0]+gravity[1]*gravity[1]+gravity[2]*gravity[2]);
           if (total < 1e-5) {
@@ -371,6 +402,11 @@ public class TwoPoint extends Activity implements SensorEventListener {
 	public void onAccuracyChanged(Sensor arg0, int arg1) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	static class GravityDatum {
+		float[] gravity = {0,0,0};
+		long timestamp;
 	}
 }
 

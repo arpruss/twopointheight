@@ -78,6 +78,10 @@ public class OverlayView extends View {
 	}
 
 	public void drawText(Canvas canvas, String s, String test, int lineNumber) {
+		drawText(canvas,s,s,lineNumber, 1.0f);
+	}
+
+	public void drawText(Canvas canvas, String s, String test, int lineNumber, float scale) {
 		textPaint.setTextScaleX(1.0f);
 
 		textPaint.getTextBounds(test, 0, test.length(), testRect);
@@ -107,14 +111,12 @@ public class OverlayView extends View {
 		bigTextPaint.getTextBounds(s, 0, s.length(), testRect);
 
 		if (testRect.width() > width) {
-			Log.v("TwoPoint", "start size: "+bigTextPaint.getTextSize());
 			bigTextPaint.setTextSize(bigTextPaint.getTextSize() * width / testRect.width());
 			bigTextPaint.getTextBounds(s, 0, s.length(), testRect);
-			Log.v("TwoPoint", "end size: "+bigTextPaint.getTextSize());
 		}
 		
-		testRect.offset((width - testRect.width())/2, 
-				height/2 - testRect.height()/2);
+		testRect.offset((width - testRect.width())/2,
+				(int)(testRect.height()*1.5));
 
 		RectF roundedRect = new RectF(testRect);
 		
@@ -130,7 +132,7 @@ public class OverlayView extends View {
 	@Override
 	public void onDraw(Canvas canvas) {
 		if (! Double.isNaN(angle))
-			drawText(canvas, degreeFormat.format(angle)+"\u00B0","-90\u00B0", 1);
+			drawText(canvas, degreeFormat.format(angle)+"\u00B0","-90.0\u00B0", 1);
 
 		if (axis == TwoPoint.CAMERA_AXIS) {
 			drawText(canvas, "Point to "+(pointCount==0?"top or bottom":"other end")+" of target and tap screen or press volume buttom.",0);
@@ -140,6 +142,11 @@ public class OverlayView extends View {
 			drawText(canvas, "Sight "+(pointCount==0?"top or bottom":"other end")+" of target and tap screen or press volume button.",0);
 			drawCentered(canvas, phoneImage);
 		}
+
+		if (pointCount == 0)
+			drawBigText(canvas, "First Point");
+		else
+			drawBigText(canvas, "Second Point");
 	}
 
 	@Override
