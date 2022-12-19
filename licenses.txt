@@ -1,5 +1,5 @@
 <b>ActionBarSherlock Copyright (C) Jake Wharton<br/>
-Android icons and sample code Copyright (C) 2010-14 The Android Open Source Project and/or Google, Inc.<br/>
+Android icons and sample code Copyright (C) 2010-22 The Android Open Source Project and/or Google, Inc.<br/>
 Two Point Height code Copyright (C) 2014 Alexander R. Pruss<br/>
 </b>
 <code>

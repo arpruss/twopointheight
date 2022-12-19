@@ -1,4 +1,4 @@
-<b>Android icons and sample code Copyright (C) 2010-14 The Android Open Source Project and/or Google, Inc.<br/></b>
+<b>Android icons and sample code Copyright (C) 2010-22 The Android Open Source Project and/or Google, Inc.<br/></b>
 <code>
                                  Apache License
                            Version 2.0, January 2004

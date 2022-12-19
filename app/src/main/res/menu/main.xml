@@ -3,8 +3,13 @@
     <item android:id="@+id/restart"
           android:title="Restart" 
           android:showAsAction="always"
-          android:icon="@drawable/ic_action_rewind"
+          android:icon="@drawable/fast_rewind"
           />
+    <item android:id="@+id/camera_switch"
+        android:title="Restart"
+        android:showAsAction="always"
+        android:icon="@drawable/cameraswitch"
+        />
     <item android:id="@+id/licenses"
         android:title="Licenses"
         android:showAsAction="never"/>

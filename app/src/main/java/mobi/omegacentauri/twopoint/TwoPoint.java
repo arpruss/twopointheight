@@ -39,6 +39,8 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.hardware.Camera.Size;
 import android.hardware.SensorEvent;
+import android.hardware.camera2.CameraAccessException;
+import android.hardware.camera2.CameraManager;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
@@ -86,6 +88,8 @@ public class TwoPoint extends Activity implements SensorEventListener {
 	static final short[] beep = sinewave(2000, 20, 0.01f);
 
 	private AudioTrack mBeep;
+	private Object cameraNumber;
+	private Camera.CameraInfo mCameraInfo;
 
 	static private short[] sinewave(float frequency, long duration, float amplitude) {
 		int numSamples = (int)(44.100 * duration);
@@ -158,9 +162,9 @@ public class TwoPoint extends Activity implements SensorEventListener {
 	@Override
 	public void onSensorChanged(SensorEvent event)
     {
-          gravity[0] = 0.8 * gravity[0] + 0.2f * event.values[0];
-          gravity[1] = 0.8 * gravity[1] + 0.2 * event.values[1];
-          gravity[2] = 0.8 * gravity[2] + 0.2 * event.values[2];
+          gravity[0] = 0.9 * gravity[0] + 0.1f * event.values[0];
+          gravity[1] = 0.9 * gravity[1] + 0.1f * event.values[1];
+          gravity[2] = 0.9 * gravity[2] + 0.1f * event.values[2];
 
           double total = Math.sqrt(gravity[0]*gravity[0]+gravity[1]*gravity[1]+gravity[2]*gravity[2]);
           if (total < 1e-5) {
@@ -168,8 +172,10 @@ public class TwoPoint extends Activity implements SensorEventListener {
           }
           else {
         	  curAngle = (float) (Math.asin(gravity[axis]/total));
-        	  if (axis == CAMERA_AXIS)
-        		  curAngle = -curAngle;
+        	  if (axis == CAMERA_AXIS) {
+				  if (mCameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_BACK)
+				  	curAngle = -curAngle;
+			  }
           }
           if(mOverlay != null)
         	  mOverlay.setAngle(curAngle);
@@ -211,8 +217,13 @@ public class TwoPoint extends Activity implements SensorEventListener {
 	        // and set it as the content of our activity.
 			if (haveCameraPermission()) {
 				Log.v("TPH", "opening camera");
-				mCamera = Camera.open();
+				int cm = mOptions.getInt("CAMERA_NUMBER", 0);
+				if (cm >= Camera.getNumberOfCameras())
+					cm = 0;
 				mPreview = new CameraPreview(this);
+				mCamera = Camera.open(cm);
+				mCameraInfo = new Camera.CameraInfo();
+				Camera.getCameraInfo(cm, mCameraInfo);
 				mPreview.setCamera(mCamera, 0);
 				mFrame.addView(mPreview);
 			}
@@ -327,6 +338,14 @@ public class TwoPoint extends Activity implements SensorEventListener {
         	zeroed = false;
         	mOverlay.setPointCount(pointCount);
         	return true;
+		case R.id.camera_switch:
+			int cm = mOptions.getInt("CAMERA_NUMBER", 0);
+			cm = (cm+1) % Camera.getNumberOfCameras();
+			mOptions.edit().putInt("CAMERA_NUMBER", cm).apply();
+			Intent intent = getIntent();
+			finish();
+			startActivity(intent);
+			return true;
         case R.id.mode:
         	if (axis == CAMERA_AXIS)
         		axis = PHONE_AXIS;
