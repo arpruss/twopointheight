@@ -81,8 +81,8 @@ public class TwoPoint extends Activity implements SensorEventListener {
 	private int pointCount;
 	private double curAngle = 0f;
 	float[] gravity = { 0f, 0f, 0f };
-	static final int MAX_MOVING_AVERAGE_COUNT = 500;
-	static final long MOVING_AVERAGE_TIME = 200l*1000*1000; //100l*1000l*1000l; // in nanoseconds
+	static final int MAX_MOVING_AVERAGE_COUNT = 2000;
+	static final long MOVING_AVERAGE_TIME = 400l*1000*1000; //100l*1000l*1000l; // in nanoseconds
 	float[][] gravityHistory = new float[MAX_MOVING_AVERAGE_COUNT][3];
 	long[] timeHistory = new long[MAX_MOVING_AVERAGE_COUNT];
 	static int eventHistoryTail = 0;
@@ -138,6 +138,11 @@ public class TwoPoint extends Activity implements SensorEventListener {
 		if (!haveCameraPermission()) {
 			Log.v("TPH", "requesting");
 			requestPermissions(new String[] {"android.permission.CAMERA"}, 0);
+		}
+
+		if (!mOptions.getBoolean("showedHelp", false)) {
+			Utils.show(this, "Help", "instructions.txt");
+			mOptions.edit().putBoolean("showedHelp", true).apply();
 		}
 	}
 
@@ -382,7 +387,7 @@ public class TwoPoint extends Activity implements SensorEventListener {
         		axis = PHONE_AXIS;
         	else
         		axis = CAMERA_AXIS;
-        	mOptions.edit().putBoolean(PREF_CAMERA, axis == CAMERA_AXIS).commit();
+        	mOptions.edit().putBoolean(PREF_CAMERA, axis == CAMERA_AXIS).apply();
         	initViews();
         	return true;
         case R.id.zero:
@@ -391,8 +396,11 @@ public class TwoPoint extends Activity implements SensorEventListener {
         	safeInvalidateOptionsMenu();
         	return true;
         case R.id.licenses:
-        	Utils.showLicenses(this);
+        	Utils.show(this, "Licenses and Copyrights", "licenses.txt");
         	return true;
+		case R.id.help:
+			Utils.show(this, "Help", "instructions.txt");
+			return true;
         default:
             return super.onOptionsItemSelected(item);
         }

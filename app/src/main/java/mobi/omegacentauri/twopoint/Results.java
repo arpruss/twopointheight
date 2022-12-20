@@ -10,6 +10,7 @@ import android.preference.PreferenceManager;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
@@ -25,10 +26,11 @@ public class Results extends Activity {
 	private EditText distanceText;
 	private TextView estDistanceText;
 	private TextView heightText;
-	private DecimalFormat degreeFormat = new DecimalFormat("#.0");
-	private DecimalFormat distanceFormat = new DecimalFormat("#.###");
+	private DecimalFormat degreeFormat = new DecimalFormat("0.0");
+	private DecimalFormat distanceFormat = new DecimalFormat("0.000");
 	private TextView messageText;
-	
+	private TextView distanceLabel;
+
 	@Override
     public void onCreate(Bundle savedInstanceState) {
 		Log.v("TwoPoint", "Results:onCreate");
@@ -47,6 +49,7 @@ public class Results extends Activity {
         deviceHeightText.setText(options.getString(TwoPoint.DEVICE_HEIGHT, "1.8"));
         distanceText = (EditText)findViewById(R.id.distance);
         estDistanceText = (TextView)findViewById(R.id.estDistance);
+		distanceLabel = (TextView)findViewById(R.id.distance_label);
         heightText = (TextView)findViewById(R.id.height);
         messageText = (TextView)findViewById(R.id.message);
 	}
@@ -79,7 +82,14 @@ public class Results extends Activity {
 
 		((TextView)findViewById(R.id.angle0)).setText("Bottom angle: "+degreeFormat.format(angleLow*180/Math.PI)+"\u00B0");
 		((TextView)findViewById(R.id.angle1)).setText("Top angle: "+degreeFormat.format(angleHigh*180/Math.PI)+"\u00B0");
-		
+
+		if (angleLow >= -EPS) {
+			distanceLabel.setText("Distance to target base: ");
+		}
+		else {
+			distanceLabel.setText("Distance to target base (optional): ");
+		}
+
 		recalculate();
 
 		TextWatcher tw = new TextWatcher() {
@@ -113,12 +123,17 @@ public class Results extends Activity {
 	private void recalculate() {
 		try {
 			Log.v("TwoPoint", "calculating");
-			double deviceHeight = Double.parseDouble(deviceHeightText.getText().toString().trim());
-			if (Math.abs(deviceHeight) <= EPS) 
-				throw new NumberFormatException();
-			
-			Log.v("TwoPoint", "dev height = "+deviceHeight);
-			
+			double deviceHeight;
+			try {
+				deviceHeight = Double.parseDouble(deviceHeightText.getText().toString().trim());
+				if (Math.abs(deviceHeight) <= EPS)
+					deviceHeight = Double.NaN;
+				Log.v("TwoPoint", "dev height = "+deviceHeight);
+			}
+			catch (NumberFormatException e) {
+				deviceHeight = Double.NaN;
+			}
+
 			String distanceString = distanceText.getText().toString().trim();
 			
 			double distance;
@@ -149,7 +164,7 @@ public class Results extends Activity {
 			
 			double height = distance * ( Math.tan(angleHigh) - Math.tan(angleLow) );
 			
-			if (Math.abs(angleLow)<EPS)
+			if (Math.abs(angleLow)<EPS && ! Double.isNaN(deviceHeight))
 				height += deviceHeight;
 			
 			if (Double.isNaN(estDistance)) {
@@ -167,13 +182,24 @@ public class Results extends Activity {
 			Log.v("TwoPoint", "invalid data");
 			estDistanceText.setVisibility(View.INVISIBLE);
 			messageText.setText("Please ensure distance and height are filled out.");
+			heightText.setText("Target height: unknown");
 		}
+	}
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		getMenuInflater().inflate(R.menu.results, menu);
+		return true;
 	}
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		if (item.getItemId() == android.R.id.home) {
 			startActivity(new Intent(this, TwoPoint.class));
+			return true;
+		}
+		else if (item.getItemId() == R.id.help) {
+			Utils.show(this, "Help", "instructions.txt");
 			return true;
 		}
 		return false;

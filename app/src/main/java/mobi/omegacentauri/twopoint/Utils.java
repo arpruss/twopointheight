@@ -37,10 +37,10 @@ public class Utils {
 		}
 	}
 
-	public static void showLicenses(Context context) {
+	public static void show(Context context, String title, String assetName) {
         AlertDialog alertDialog = new AlertDialog.Builder(context).create();
-        alertDialog.setTitle("Licenses and copyrights");
-        alertDialog.setMessage(Html.fromHtml(getAssetFile(context, "licenses.txt")));
+        alertDialog.setTitle(title);
+        alertDialog.setMessage(Html.fromHtml(getAssetFile(context, assetName)));
         alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, "OK", 
         	new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {} });
@@ -53,5 +53,5 @@ public class Utils {
 		int a = s.width;
 		s.width = s.height;
 		s.height = a;		
-	}	
+	}
 }

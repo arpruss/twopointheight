@@ -34,7 +34,7 @@ public class OverlayView extends View {
 	private RectF roundedRect;
 	private int pointCount;
 	private double angle;
-	private DecimalFormat degreeFormat = new DecimalFormat("#.0");
+	private DecimalFormat degreeFormat = new DecimalFormat("0.0");
 	private int width;
 	private int height;
 	private int axis;
