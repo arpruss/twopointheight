@@ -3,13 +3,16 @@
     <item android:id="@+id/restart"
           android:title="Restart" 
           android:showAsAction="always"
-          android:icon="@drawable/fast_rewind"
+          android:icon="@drawable/reset"
           />
     <item android:id="@+id/camera_switch"
         android:title="Restart"
         android:showAsAction="always"
         android:icon="@drawable/cameraswitch"
         />
+    <item android:id="@+id/mode"
+        android:title="Sighting mode"
+        android:showAsAction="never"/>
     <item android:id="@+id/licenses"
         android:title="Licenses"
         android:showAsAction="never"/>
@@ -17,8 +20,9 @@
         android:title="Zero angle"
         android:icon="@drawable/zero"
         android:showAsAction="always"/>
-    <item android:id="@+id/mode"
-        android:title="Mode"
+    <item android:id="@+id/help"
+        android:title="Help"
+        android:icon="@drawable/help"
         android:showAsAction="always"/>
-    
+
 </menu>
