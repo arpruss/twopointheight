@@ -78,10 +78,6 @@ public class OverlayView extends View {
 	}
 
 	public void drawText(Canvas canvas, String s, String test, int lineNumber) {
-		drawText(canvas,s,s,lineNumber, 1.0f);
-	}
-
-	public void drawText(Canvas canvas, String s, String test, int lineNumber, float scale) {
 		textPaint.setTextScaleX(1.0f);
 
 		textPaint.getTextBounds(test, 0, test.length(), testRect);
@@ -106,8 +102,12 @@ public class OverlayView extends View {
 
 		textPaint.setTextScaleX(1.0f);
 	}
+
+	public void drawBigText(Canvas canvas, String s, boolean top) {
+		drawBigText(canvas,s,s,top);
+	}
 	
-	public void drawBigText(Canvas canvas, String s) {
+	public void drawBigText(Canvas canvas, String s,String test,  boolean top) {
 		bigTextPaint.getTextBounds(s, 0, s.length(), testRect);
 
 		if (testRect.width() > width) {
@@ -116,7 +116,9 @@ public class OverlayView extends View {
 		}
 		
 		testRect.offset((width - testRect.width())/2,
-				(int)(testRect.height()*1.5));
+				top ? (int)(testRect.height()*1.5) :
+						(int)(height - (testRect.height() + textPaint.getTextSize()*1.5))
+				);
 
 		RectF roundedRect = new RectF(testRect);
 		
@@ -125,14 +127,14 @@ public class OverlayView extends View {
 		roundedRect.right += 10f;
 		roundedRect.bottom += 10f;
 		
-		canvas.drawRoundRect(roundedRect, 5f, 5f, textBackPaint);
+		canvas.drawRoundRect(roundedRect, 15f, 15f, textBackPaint);
 		canvas.drawText(s, testRect.left, testRect.bottom, bigTextPaint);		
 	}
 	
 	@Override
 	public void onDraw(Canvas canvas) {
 		if (! Double.isNaN(angle))
-			drawText(canvas, degreeFormat.format(angle)+"\u00B0","-90.0\u00B0", 1);
+			drawBigText(canvas, degreeFormat.format(angle)+"\u00B0","-90.0\u00B0", false);
 
 		if (axis == TwoPoint.CAMERA_AXIS) {
 			drawText(canvas, "Point to "+(pointCount==0?"top or bottom":"other end")+" of target and tap screen or press volume buttom.",0);
@@ -144,9 +146,9 @@ public class OverlayView extends View {
 		}
 
 		if (pointCount == 0)
-			drawBigText(canvas, "First Point");
+			drawBigText(canvas, "First Point", true);
 		else
-			drawBigText(canvas, "Second Point");
+			drawBigText(canvas, "Second Point", true);
 	}
 
 	@Override

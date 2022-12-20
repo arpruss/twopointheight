@@ -80,12 +80,9 @@ public class TwoPoint extends Activity implements SensorEventListener {
     OverlayView mOverlay;
 	private int pointCount;
 	private double curAngle = 0f;
+	private float timeConstant = 0.4f;
+	private long prevSensorTime;
 	float[] gravity = { 0f, 0f, 0f };
-	static final int MAX_MOVING_AVERAGE_COUNT = 2000;
-	static final long MOVING_AVERAGE_TIME = 400l*1000*1000; //100l*1000l*1000l; // in nanoseconds
-	float[][] gravityHistory = new float[MAX_MOVING_AVERAGE_COUNT][3];
-	long[] timeHistory = new long[MAX_MOVING_AVERAGE_COUNT];
-	static int eventHistoryTail = 0;
 
 	private boolean zeroed;
 	int axis;
@@ -173,48 +170,33 @@ public class TwoPoint extends Activity implements SensorEventListener {
 	@Override
 	public void onSensorChanged(SensorEvent event)
     {
-		  gravityHistory[eventHistoryTail][0] = event.values[0];
-		  gravityHistory[eventHistoryTail][1] = event.values[1];
-		  gravityHistory[eventHistoryTail][2] = event.values[2];
-		  long stamp = event.timestamp;
-		  timeHistory[eventHistoryTail] = stamp;
-		  int i = eventHistoryTail;
-		  gravity[0] = 0;
-		  gravity[1] = 0;
-		  gravity[2] = 0;
-		  int count = 0;
-		  do {
-			  if (timeHistory[i] < stamp - MOVING_AVERAGE_TIME) {
-				  break;
-			  }
-			  gravity[0] += gravityHistory[i][0];
-			  gravity[1] += gravityHistory[i][1];
-			  gravity[2] += gravityHistory[i][2];
-			  count++;
-			  i = (MAX_MOVING_AVERAGE_COUNT + i-1) % MAX_MOVING_AVERAGE_COUNT;
-		  } while(i != eventHistoryTail && timeHistory[i] != 0);
-		  eventHistoryTail = (eventHistoryTail + 1) % MAX_MOVING_AVERAGE_COUNT;
+		float alpha;
 
-		gravity[0] /= count;
-		gravity[1] /= count;
-		gravity[2] /= count;
-//          gravity[0] = 0.9 * gravity[0] + 0.1f * event.values[0];
-//          gravity[1] = 0.9 * gravity[1] + 0.1f * event.values[1];
-//          gravity[2] = 0.9 * gravity[2] + 0.1f * event.values[2];
+		if (prevSensorTime < 0 || event.timestamp <= prevSensorTime)
+			alpha = 1;
+		else {
+			float dt = (event.timestamp-prevSensorTime)/1e9f;
+			alpha = timeConstant / (timeConstant + dt);
+		}
+		prevSensorTime = event.timestamp;
 
-          double total = Math.sqrt(gravity[0]*gravity[0]+gravity[1]*gravity[1]+gravity[2]*gravity[2]);
-          if (total < 1e-5) {
-        	  curAngle = 0f;
-          }
-          else {
-        	  curAngle = (float) (Math.asin(gravity[axis]/total));
-        	  if (axis == CAMERA_AXIS) {
-				  if (mCameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_BACK)
-				  	curAngle = -curAngle;
-			  }
-          }
-          if(mOverlay != null)
-        	  mOverlay.setAngle(curAngle);
+		gravity[0] = event.values[0] * (1-alpha) + gravity[0] * alpha;
+		gravity[1] = event.values[1] * (1-alpha) + gravity[1] * alpha;
+		gravity[2] = event.values[2] * (1-alpha) + gravity[2] * alpha;
+
+		double total = Math.sqrt(gravity[0]*gravity[0]+gravity[1]*gravity[1]+gravity[2]*gravity[2]);
+		if (total < 1e-5) {
+		  curAngle = 0f;
+		}
+		else {
+		  curAngle = (float) (Math.asin(gravity[axis]/total));
+		  if (axis == CAMERA_AXIS) {
+			  if (mCameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_BACK)
+				curAngle = -curAngle;
+		  }
+		}
+		if(mOverlay != null)
+		  mOverlay.setAngle(curAngle);
     }
 
 	@Override
@@ -286,14 +268,25 @@ public class TwoPoint extends Activity implements SensorEventListener {
 		});
         
 		SensorManager sensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
-		if (sensorManager.getSensorList(Sensor.TYPE_ACCELEROMETER).size() > 0) {
+		if (sensorManager.getSensorList(Sensor.TYPE_GRAVITY).size() > 0) {
+			gravity[0] = 0f;
+			gravity[1] = 0f;
+			gravity[2] = 0f;
+			prevSensorTime = -1;
+			timeConstant = 0.2f;
+			sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY),
+					SensorManager.SENSOR_DELAY_FASTEST);
+		}
+		else if (sensorManager.getSensorList(Sensor.TYPE_ACCELEROMETER).size() > 0) {
 			gravity[0] = 0f;
 			gravity[1] = 0f; 
 			gravity[2] = 0f;
+			prevSensorTime = -1;
+			timeConstant = 0.4f;
 			sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
 					SensorManager.SENSOR_DELAY_FASTEST);
 		}
-        
+
     }
     
 	@SuppressLint("NewApi")
