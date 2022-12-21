@@ -10,6 +10,9 @@
         android:showAsAction="always"
         android:icon="@drawable/cameraswitch"
         />
+    <item android:id="@+id/calibrate"
+        android:title="Calibrate"
+        android:showAsAction="never"/>
     <item android:id="@+id/mode"
         android:title="Sighting mode"
         android:showAsAction="never"/>

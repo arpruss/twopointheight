@@ -11,6 +11,9 @@ for x in cameraswitch reset help menu ; do
     convert $x.png -resize 36x36 app/src/main/res/drawable-mdpi/$x.png
     convert $x.png -resize 24x24 app/src/main/res/drawable-ldpi/$x.png
 done
+
+cp licenses.txt app/src/main/assets/
+cp measure.png app/src/main/res/drawable/
     
     
 #for x in zero ; do

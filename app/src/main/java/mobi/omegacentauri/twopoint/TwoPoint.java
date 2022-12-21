@@ -80,9 +80,10 @@ public class TwoPoint extends Activity implements SensorEventListener {
     OverlayView mOverlay;
 	private int pointCount;
 	private double curAngle = 0f;
-	private float timeConstant = 0.4f;
+	private double timeConstant = 0.4f;
 	private long prevSensorTime;
-	float[] gravity = { 0f, 0f, 0f };
+	double[] gravity = { 0f, 0f, 0f };
+	double[] calibration = { 0f, 0f, 1f };
 
 	private boolean zeroed;
 	int axis;
@@ -131,6 +132,10 @@ public class TwoPoint extends Activity implements SensorEventListener {
         pointCount = 0;
         zeroed = false;
         axis = mOptions.getBoolean(PREF_CAMERA, true) ? CAMERA_AXIS : PHONE_AXIS;
+		calibration[0] = Double.longBitsToDouble(mOptions.getLong("CALIBRATE0", Double.doubleToLongBits(0.)));
+		calibration[1] = Double.longBitsToDouble(mOptions.getLong("CALIBRATE1", Double.doubleToLongBits(0.)));
+		calibration[2] = Double.longBitsToDouble(mOptions.getLong("CALIBRATE2", Double.doubleToLongBits(1.)));
+		Log.v("twopoint", "calibration "+calibration[0]+","+calibration[1]+","+calibration[2]);
 
 		if (!haveCameraPermission()) {
 			Log.v("TPH", "requesting");
@@ -170,12 +175,12 @@ public class TwoPoint extends Activity implements SensorEventListener {
 	@Override
 	public void onSensorChanged(SensorEvent event)
     {
-		float alpha;
+		double alpha;
 
 		if (prevSensorTime < 0 || event.timestamp <= prevSensorTime)
 			alpha = 1;
 		else {
-			float dt = (event.timestamp-prevSensorTime)/1e9f;
+			double dt = (event.timestamp-prevSensorTime)/1e9f;
 			alpha = timeConstant / (timeConstant + dt);
 		}
 		prevSensorTime = event.timestamp;
@@ -189,11 +194,13 @@ public class TwoPoint extends Activity implements SensorEventListener {
 		  curAngle = 0f;
 		}
 		else {
-		  curAngle = (float) (Math.asin(gravity[axis]/total));
-		  if (axis == CAMERA_AXIS) {
-			  if (mCameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_BACK)
-				curAngle = -curAngle;
-		  }
+			if (axis == PHONE_AXIS)
+		  		curAngle = (float) (Math.asin(gravity[axis]/total));
+			else {
+				curAngle = Math.PI/2-Math.acos((gravity[0]*calibration[0]+gravity[1]*calibration[1]+gravity[2]*calibration[2])/total);
+				if (mCameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_BACK)
+					curAngle = -curAngle;
+			}
 		}
 		if(mOverlay != null)
 		  mOverlay.setAngle(curAngle);
@@ -355,10 +362,47 @@ public class TwoPoint extends Activity implements SensorEventListener {
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main, menu);
 		menu.findItem(R.id.zero).setVisible(! zeroed);
+		menu.findItem(R.id.calibrate).setVisible(axis != PHONE_AXIS);
         return true;
     }
 
-    @Override
+	void saveCalibration() {
+		SharedPreferences.Editor ed = mOptions.edit();
+		ed.putLong("CALIBRATE0", Double.doubleToLongBits(calibration[0]));
+		ed.putLong("CALIBRATE1", Double.doubleToLongBits(calibration[1]));
+		ed.putLong("CALIBRATE2", Double.doubleToLongBits(calibration[2]));
+		ed.apply();
+	}
+
+	void calibrate() {
+		AlertDialog alertDialog = new AlertDialog.Builder(this).create();
+		alertDialog.setTitle("Calibrate");
+		alertDialog.setMessage("Put device face up on level surface and press calibrate button.");
+		alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, "Calibrate",
+				new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int which) {
+						double totalGravity = Math.sqrt(gravity[0]*gravity[0]+gravity[1]*gravity[1]+gravity[2]*gravity[2]);
+						if (totalGravity >= 1e-5) {
+							calibration[0] = gravity[0] / totalGravity;
+							calibration[1] = gravity[1] / totalGravity;
+							calibration[2] = gravity[2] / totalGravity;
+							saveCalibration();
+						}
+					} });
+		alertDialog.setButton(DialogInterface.BUTTON_NEUTRAL, "Reset",
+				new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int which) {
+						calibration[0] = 0;
+						calibration[1] = 0;
+						calibration[2] = 1;
+						saveCalibration();
+					} });
+		alertDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+			public void onCancel(DialogInterface dialog) {} });
+		alertDialog.show();
+	}
+
+	@Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle item selection
         switch (item.getItemId()) {
@@ -382,12 +426,16 @@ public class TwoPoint extends Activity implements SensorEventListener {
         		axis = CAMERA_AXIS;
         	mOptions.edit().putBoolean(PREF_CAMERA, axis == CAMERA_AXIS).apply();
         	initViews();
+			safeInvalidateOptionsMenu();
         	return true;
         case R.id.zero:
         	zeroed = true;
         	addAngleWithFeedback(0.);
         	safeInvalidateOptionsMenu();
         	return true;
+		case R.id.calibrate:
+			calibrate();
+			return true;
         case R.id.licenses:
         	Utils.show(this, "Licenses and Copyrights", "licenses.txt");
         	return true;
@@ -403,11 +451,6 @@ public class TwoPoint extends Activity implements SensorEventListener {
 	public void onAccuracyChanged(Sensor arg0, int arg1) {
 		// TODO Auto-generated method stub
 		
-	}
-
-	static class GravityDatum {
-		float[] gravity = {0,0,0};
-		long timestamp;
 	}
 }
 
