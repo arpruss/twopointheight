@@ -160,8 +160,9 @@ public class TwoPoint extends Activity implements SensorEventListener {
 					haveCameraPermission = true;
 				}
 			}
-		if (haveCameraPermission)
+		if (haveCameraPermission) {
 			initViews();
+		}
 		else {
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
 				finishAffinity();
@@ -198,7 +199,7 @@ public class TwoPoint extends Activity implements SensorEventListener {
 		  		curAngle = (float) (Math.asin(gravity[axis]/total));
 			else {
 				curAngle = Math.PI/2-Math.acos((gravity[0]*calibration[0]+gravity[1]*calibration[1]+gravity[2]*calibration[2])/total);
-				if (mCameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_BACK)
+				if (mCamera != null && mCameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_BACK)
 					curAngle = -curAngle;
 			}
 		}

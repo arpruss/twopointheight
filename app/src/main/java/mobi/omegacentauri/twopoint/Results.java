@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.Editable;
+import android.text.Html;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Menu;
@@ -52,6 +53,7 @@ public class Results extends Activity {
 		distanceLabel = (TextView)findViewById(R.id.distance_label);
         heightText = (TextView)findViewById(R.id.height);
         messageText = (TextView)findViewById(R.id.message);
+		((TextView)findViewById(R.id.height_label)).setText(Html.fromHtml("Camera height <i>h</i>:"));
 	}
 	
 	@Override
@@ -84,10 +86,10 @@ public class Results extends Activity {
 		((TextView)findViewById(R.id.angle1)).setText("Top angle: "+degreeFormat.format(angleHigh*180/Math.PI)+"\u00B0");
 
 		if (angleLow >= -EPS) {
-			distanceLabel.setText("Distance to target base: ");
+			distanceLabel.setText("Distance <i>d</i> to target: ");
 		}
 		else {
-			distanceLabel.setText("Distance to target base (optional): ");
+			distanceLabel.setText(Html.fromHtml( "Distance <i>d</i> to target (optional): "));
 		}
 
 		recalculate();
@@ -172,10 +174,10 @@ public class Results extends Activity {
 			}
 			else {
 				estDistanceText.setVisibility(View.VISIBLE);
-				estDistanceText.setText("Est. distance: "+distanceFormat.format(estDistance));
+				estDistanceText.setText(Html.fromHtml("Est. distance <i>d</i>: "+distanceFormat.format(estDistance)));
 			}
 			
-			heightText.setText("Target height: "+distanceFormat.format(height));
+			heightText.setText(Html.fromHtml("Target height <i>H</i>: "+distanceFormat.format(height)));
 			messageText.setText("");
 		}
 		catch(Exception e) {

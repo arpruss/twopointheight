@@ -51,6 +51,7 @@
     android:layout_width="fill_parent"
     android:layout_height="wrap_content">
 <TextView
+	android:id="@+id/height_label"
     android:textSize="16sp"
     android:text="Camera height: "
     android:layout_width="wrap_content"
@@ -88,5 +89,13 @@
     android:layout_height="wrap_content" 
     android:text="Note: Use the same units (meters, feet, inches, chains, etc.) for all measurements, and the target height will be in the same unit. In typical use, camera height is close to your own height. If you can measure the distance to the target base, you will get better precision."
     />
+
+	<ImageView
+		android:src="@drawable/measure"
+		android:layout_height="0dp"
+		android:layout_weight="1"
+		android:layout_width="match_parent"
+		android:scaleType="centerInside"
+		/>
 
 </LinearLayout>

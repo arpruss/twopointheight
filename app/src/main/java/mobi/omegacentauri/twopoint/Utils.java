@@ -8,8 +8,10 @@ import java.io.InputStreamReader;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.graphics.drawable.Drawable;
 import android.hardware.Camera.Size;
 import android.text.Html;
+import android.util.DisplayMetrics;
 
 public class Utils {
 	static public String getAssetFile(Context context, String assetName) {
@@ -40,7 +42,25 @@ public class Utils {
 	public static void show(Context context, String title, String assetName) {
         AlertDialog alertDialog = new AlertDialog.Builder(context).create();
         alertDialog.setTitle(title);
-        alertDialog.setMessage(Html.fromHtml(getAssetFile(context, assetName)));
+        alertDialog.setMessage(Html.fromHtml(getAssetFile(context, assetName), new Html.ImageGetter() {
+			@Override
+			public Drawable getDrawable(String s) {
+				int id;
+
+				if (s.equals("measure.png")) {
+					id = R.drawable.measure;
+				}
+				else {
+					return null;
+				}
+				Drawable d = context.getResources().getDrawable(id);
+				DisplayMetrics metrics = context.getResources().getDisplayMetrics();
+				int width = Math.min(metrics.widthPixels,  metrics.heightPixels) * 2 / 3;
+				int height = width * d.getIntrinsicHeight()/d.getIntrinsicWidth();
+				d.setBounds(0,0,width,height); //d.getIntrinsicWidth(),d.getIntrinsicHeight());
+				return d;
+			}
+		}, null));
         alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, "OK", 
         	new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {} });
