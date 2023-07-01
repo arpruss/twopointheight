@@ -4,10 +4,7 @@ package mobi.omegacentauri.twopoint;
 
 import java.text.DecimalFormat;
 
-import mobi.omegacentauri.twopoint.R;
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -16,14 +13,11 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Typeface;
-import android.graphics.drawable.Drawable;
-import android.os.SystemClock;
-import android.util.Log;
 import android.util.TypedValue;
-import android.view.MotionEvent;
 import android.view.View;
 
 public class OverlayView extends View {
+	private final CameraPreview mPreview;
 	Context context;
 	private Bitmap crossImage;
 	private Bitmap phoneImage;
@@ -44,8 +38,10 @@ public class OverlayView extends View {
 		return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, sp, context.getResources().getDisplayMetrics());
 	}
 	
-	public OverlayView(Context context) {
+	public OverlayView(Context context, CameraPreview preview) {
 		super(context);
+
+		mPreview = preview;
 		
 		this.context = context;
 
@@ -136,13 +132,13 @@ public class OverlayView extends View {
 		if (! Double.isNaN(angle))
 			drawBigText(canvas, degreeFormat.format(angle)+"\u00B0","-90.0\u00B0", false);
 
-		if (axis == TwoPoint.CAMERA_AXIS) {
+		if (axis == TwoPoint.CAMERA_AXIS && mPreview != null) {
 			drawText(canvas, "Point to "+(pointCount==0?"top or bottom":"other end")+" of target and tap screen or press volume buttom.",0);
-			drawCentered(canvas, crossImage);
+			drawCentered(canvas, crossImage, mPreview.crosshairDelta("X"),mPreview.crosshairDelta("Y"));
 		}
 		else {
 			drawText(canvas, "Sight "+(pointCount==0?"top or bottom":"other end")+" of target and tap screen or press volume button.",0);
-			drawCentered(canvas, phoneImage);
+			drawCentered(canvas, phoneImage, 0, 0);
 		}
 
 		if (pointCount == 0)
@@ -180,10 +176,10 @@ public class OverlayView extends View {
 
 	}
     
-	private void drawCentered(Canvas canvas, Bitmap bitmap) {
+	private void drawCentered(Canvas canvas, Bitmap bitmap, int dx, int dy) {
 		bitmap.getWidth();
-		canvas.drawBitmap(bitmap, (width-bitmap.getWidth())/2, 
-				(height-bitmap.getHeight())/2, bitmapPaint);
+		canvas.drawBitmap(bitmap, (width-bitmap.getWidth())/2+dx,
+				(height-bitmap.getHeight())/2+dy, bitmapPaint);
 	}
 
 	public void setPointCount(int pointCount) {

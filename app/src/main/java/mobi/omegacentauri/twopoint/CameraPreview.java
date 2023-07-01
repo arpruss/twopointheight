@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.hardware.Camera;
 import android.hardware.Camera.Size;
 import android.os.Build;
@@ -22,6 +23,7 @@ import android.view.ViewGroup;
  */
 class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
     private final String TAG = "CameraPreview";
+    private final SharedPreferences mOptions;
 
     SurfaceView mSurfaceView;
     SurfaceHolder mHolder;
@@ -31,9 +33,13 @@ class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
     Camera.Parameters mParams;
 
 	private boolean mPortrait;
+    private int mScaledWidth = 0;
+    private int mScaledHeight = 0;
 
-    CameraPreview(Context context) {
+    CameraPreview(Context context, SharedPreferences pref) {
         super(context);
+
+        mOptions = pref;
 
         mSurfaceView = new SurfaceView(context);
         addView(mSurfaceView);
@@ -114,11 +120,15 @@ class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
                 final int scaledChildWidth = previewWidth * height / previewHeight;
                 child.layout((width - scaledChildWidth) / 2, 0,
                         (width + scaledChildWidth) / 2, height);
+                mScaledWidth = scaledChildWidth;
+                mScaledHeight = height;
                 Log.v(TAG, "scaled Width = "+scaledChildWidth+" height = "+height);
             } else {
                 final int scaledChildHeight = previewHeight * width / previewWidth;
                 child.layout(0, (height - scaledChildHeight) / 2,
                         width, (height + scaledChildHeight) / 2);
+                mScaledWidth = width;
+                mScaledHeight = scaledChildHeight;
                 Log.v(TAG, "scaled Height = "+scaledChildHeight+" width = "+width);
             }
         }
@@ -209,6 +219,20 @@ class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
 
     	Log.v(TAG, "optimal size: "+optimalSize.width+"x"+optimalSize.height);
         return optimalSize;
+    }
+
+    public int crosshairDelta(String coordinate) {
+        try {
+            int cm = mOptions.getInt("CAMERA_NUMBER", 0);
+            double tweak = Double.parseDouble(mOptions.getString(coordinate + "_TWEAK_"+cm, "0"));
+            if (coordinate == "X")
+                return (int) (mScaledWidth * tweak);
+            else
+                return (int) (mScaledHeight * tweak);
+        }
+        catch(Exception e) {
+            return 0;
+        }
     }
 
     public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) {

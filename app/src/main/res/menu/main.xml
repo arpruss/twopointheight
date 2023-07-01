@@ -11,7 +11,10 @@
         android:icon="@drawable/cameraswitch"
         />
     <item android:id="@+id/calibrate"
-        android:title="Calibrate"
+        android:title="Calibrate accelerometer"
+        android:showAsAction="never"/>
+    <item android:id="@+id/camera_crosshair_tweak"
+        android:title="Adjust camera crosshairs"
         android:showAsAction="never"/>
     <item android:id="@+id/mode"
         android:title="Sighting mode"

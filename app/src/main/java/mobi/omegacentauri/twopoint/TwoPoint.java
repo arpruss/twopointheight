@@ -60,8 +60,12 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.view.WindowManager;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 // Need the following import to get access to the app resources, since this
 // class is in a sub-package.
@@ -248,7 +252,7 @@ public class TwoPoint extends Activity implements SensorEventListener {
 				int cm = mOptions.getInt("CAMERA_NUMBER", 0);
 				if (cm >= Camera.getNumberOfCameras())
 					cm = 0;
-				mPreview = new CameraPreview(this);
+				mPreview = new CameraPreview(this, mOptions);
 				mCamera = Camera.open(cm);
 				mCameraInfo = new Camera.CameraInfo();
 				Camera.getCameraInfo(cm, mCameraInfo);
@@ -260,7 +264,7 @@ public class TwoPoint extends Activity implements SensorEventListener {
     		mPreview = null;
     	}
 
-        mOverlay = new OverlayView(this);
+        mOverlay = new OverlayView(this, mPreview);
         mFrame.addView(mOverlay);
         mOverlay.bringToFront();
         mOverlay.setPointCount(pointCount);
@@ -405,6 +409,8 @@ public class TwoPoint extends Activity implements SensorEventListener {
 		alertDialog.show();
 	}
 
+
+
 	void calibrate2() {
 		AlertDialog alertDialog = new AlertDialog.Builder(this).create();
 		alertDialog.setTitle("Calibration Step 2");
@@ -481,6 +487,9 @@ public class TwoPoint extends Activity implements SensorEventListener {
 		case R.id.calibrate:
 			calibrate();
 			return true;
+		case R.id.camera_crosshair_tweak:
+			cameraCrosshairTweak();
+			return true;
         case R.id.licenses:
         	Utils.show(this, "Licenses and Copyrights", "licenses.txt");
         	return true;
@@ -491,6 +500,56 @@ public class TwoPoint extends Activity implements SensorEventListener {
             return super.onOptionsItemSelected(item);
         }
     }
+
+	private void cameraCrosshairTweak() {
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		final int cm = mOptions.getInt("CAMERA_NUMBER", 0);
+		builder.setTitle("Tweak crosshairs for camera "+cm);
+		View content = getLayoutInflater().inflate(R.layout.camera_tweak, null);
+		builder.setView(content);
+		final EditText xtweak = (EditText)content.findViewById(R.id.xtweak);
+		final EditText ytweak = (EditText)content.findViewById(R.id.ytweak);
+		String x = mOptions.getString("X_TWEAK_"+cm, "0");
+		Log.v("twopoint x", x);
+		xtweak.setText(x);
+		Log.v("twopoint", "set x");
+		String y = mOptions.getString("Y_TWEAK_"+cm, "0");
+		Log.v("twopoint y", y);
+		ytweak.setText(y);
+		final Button saveTweak = (Button)content.findViewById(R.id.save_tweak);
+		final Button resetTweak = (Button)content.findViewById(R.id.reset_tweak);
+		resetTweak.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				xtweak.setText("0");
+				ytweak.setText("0");
+			}
+		});
+		final AlertDialog dialog = builder.create();
+		saveTweak.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				try {
+					double tx = Double.parseDouble(String.valueOf(xtweak.getText()));
+					double ty = Double.parseDouble(String.valueOf(ytweak.getText()));
+					if (tx < -.5 || tx > .5 || ty < -.5 || ty > .5) {
+						throw new Exception();
+					}
+					SharedPreferences.Editor ed = mOptions.edit();
+					ed.putString("X_TWEAK_"+cm, String.valueOf(xtweak.getText()));
+					ed.putString("Y_TWEAK_"+cm, String.valueOf(ytweak.getText()));
+					ed.commit();
+					dialog.cancel();
+				} catch (Exception e) {
+					Toast.makeText(TwoPoint.this, "Invalid value", Toast.LENGTH_LONG).show();
+				}
+			}
+		});
+		xtweak.requestFocus();
+		dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
+		Log.v("twopoint", "show tweak");
+		dialog.show();
+	}
 
 	@Override
 	public void onAccuracyChanged(Sensor arg0, int arg1) {
