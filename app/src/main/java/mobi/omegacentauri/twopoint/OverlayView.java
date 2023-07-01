@@ -31,7 +31,7 @@ public class OverlayView extends View {
 	private DecimalFormat degreeFormat = new DecimalFormat("0.0");
 	private int width;
 	private int height;
-	private int axis;
+	private int mode;
 	private Paint bigTextPaint;
 	
 	public float sp(float sp) {
@@ -129,11 +129,20 @@ public class OverlayView extends View {
 	
 	@Override
 	public void onDraw(Canvas canvas) {
-		if (! Double.isNaN(angle))
-			drawBigText(canvas, degreeFormat.format(angle)+"\u00B0","-90.0\u00B0", false);
+		if (! Double.isNaN(angle)) {
+			if (mode == TwoPoint.MODE_CLINOMETER)
+				drawBigText(canvas,
+						"V "+degreeFormat.format(angle) + "\u00B0 / " + "H "+degreeFormat.format(Math.abs(90-angle)) + "\u00B0" , "V:-90.0\u00B0 / H:90.0\u00B0", false);
+			else
+				drawBigText(canvas, degreeFormat.format(angle) + "\u00B0", mode == TwoPoint.MODE_CLINOMETER ? "90.0\u00B0" : "-90.0\u00B0", false);
+		}
 
-		if (axis == TwoPoint.CAMERA_AXIS && mPreview != null) {
+		if (mode == TwoPoint.MODE_CAMERA) {
 			drawText(canvas, "Point to "+(pointCount==0?"top or bottom":"other end")+" of target and tap screen or press volume buttom.",0);
+			drawCentered(canvas, crossImage, mPreview.crosshairDelta("X"),mPreview.crosshairDelta("Y"));
+		}
+		else if (mode == TwoPoint.MODE_CLINOMETER) {
+			drawText(canvas, "Clinometer Mode",0);
 			drawCentered(canvas, crossImage, mPreview.crosshairDelta("X"),mPreview.crosshairDelta("Y"));
 		}
 		else {
@@ -141,10 +150,12 @@ public class OverlayView extends View {
 			drawCentered(canvas, phoneImage, 0, 0);
 		}
 
-		if (pointCount == 0)
-			drawBigText(canvas, "First Point", true);
-		else
-			drawBigText(canvas, "Second Point", true);
+		if (mode != TwoPoint.MODE_CLINOMETER) {
+			if (pointCount == 0)
+				drawBigText(canvas, "First Point", true);
+			else
+				drawBigText(canvas, "Second Point", true);
+		}
 	}
 
 	@Override
@@ -192,8 +203,7 @@ public class OverlayView extends View {
 		invalidate();
 	}	
 	
-	
-	public void setAxis(int axis) {
-		this.axis = axis;
+	public void setMode(int mode) {
+		this.mode = mode;
 	}
 }

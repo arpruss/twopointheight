@@ -15,8 +15,14 @@
         android:showAsAction="always"
         android:icon="@drawable/zoom"
         />
-    <item android:id="@+id/mode"
-        android:title="Sighting mode"
+    <item android:id="@+id/camera_mode"
+        android:title="Standard camera mode"
+        android:showAsAction="never"/>
+    <item android:id="@+id/edge_mode"
+        android:title="Device edge mode"
+        android:showAsAction="never"/>
+    <item android:id="@+id/clinometer_mode"
+        android:title="Simple clinometer mode"
         android:showAsAction="never"/>
     <item android:id="@+id/calibrate"
         android:title="Calibrate accelerometer"

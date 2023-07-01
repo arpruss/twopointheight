@@ -86,7 +86,7 @@ public class Results extends Activity {
 		((TextView)findViewById(R.id.angle1)).setText("Top angle: "+degreeFormat.format(angleHigh*180/Math.PI)+"\u00B0");
 
 		if (angleLow >= -EPS) {
-			distanceLabel.setText("Distance <i>d</i> to target: ");
+			distanceLabel.setText(Html.fromHtml("Distance <i>d</i> to target: "));
 		}
 		else {
 			distanceLabel.setText(Html.fromHtml( "Distance <i>d</i> to target (optional): "));

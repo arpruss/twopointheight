@@ -33,6 +33,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.hardware.Camera;
 import android.hardware.Sensor;
 import android.hardware.SensorEventListener;
@@ -75,9 +77,14 @@ import android.widget.Toast;
 public class TwoPoint extends Activity implements SensorEventListener {
     public static final String ANGLE = "angle";
 	public static final String DEVICE_HEIGHT = "devHeight";
-	private static final String PREF_CAMERA = "cameraMode";
+	//private static final String PREF_CAMERA = "cameraMode";
 	public static final String PREF_ZOOM = "zoom";
- 
+	public static final String PREF_TWEAK = "_TWEAK_";
+	public static final String PREF_MODE = "mode";
+	public static final int MODE_EDGE = 0;
+	public static final int MODE_CAMERA = 1;
+	public static final int MODE_CLINOMETER = 2;
+
 	private CameraPreview mPreview;
     Camera mCamera = null;
     FrameLayout mFrame;
@@ -93,14 +100,15 @@ public class TwoPoint extends Activity implements SensorEventListener {
 	double[] calibration = { 0f, 0f, 1f };
 
 	private boolean zeroed;
-	int axis;
-	static final int CAMERA_AXIS = 2;
-	static final int PHONE_AXIS = 1;
+	//int axis;
+	//static final int CAMERA_AXIS = 2;
+	//static final int PHONE_AXIS = 1;
 	static final short[] beep = sinewave(2000, 20, 0.01f);
 
 	private AudioTrack mBeep;
 	private Object cameraNumber;
 	private Camera.CameraInfo mCameraInfo;
+	private int mode;
 
 	static private short[] sinewave(float frequency, long duration, float amplitude) {
 		int numSamples = (int)(44.100 * duration);
@@ -138,7 +146,8 @@ public class TwoPoint extends Activity implements SensorEventListener {
 
         pointCount = 0;
         zeroed = false;
-        axis = mOptions.getBoolean(PREF_CAMERA, true) ? CAMERA_AXIS : PHONE_AXIS;
+        //axis = mOptions.getBoolean(PREF_CAMERA, true) ? CAMERA_AXIS : PHONE_AXIS;
+		mode = mOptions.getInt(PREF_MODE, MODE_CAMERA);
 		calibration[0] = Double.longBitsToDouble(mOptions.getLong("CALIBRATE0", Double.doubleToLongBits(0.)));
 		calibration[1] = Double.longBitsToDouble(mOptions.getLong("CALIBRATE1", Double.doubleToLongBits(0.)));
 		calibration[2] = Double.longBitsToDouble(mOptions.getLong("CALIBRATE2", Double.doubleToLongBits(1.)));
@@ -202,8 +211,8 @@ public class TwoPoint extends Activity implements SensorEventListener {
 		  curAngle = 0f;
 		}
 		else {
-			if (axis == PHONE_AXIS)
-		  		curAngle = (float) (Math.asin(gravity[axis]/total));
+			if (mode == MODE_EDGE)
+		  		curAngle = (float) (Math.asin(gravity[1]/total));
 			else {
 				curAngle = Math.PI/2-Math.acos((gravity[0]*calibration[0]+gravity[1]*calibration[1]+gravity[2]*calibration[2])/total);
 				if (mCamera != null && mCameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_BACK)
@@ -246,7 +255,7 @@ public class TwoPoint extends Activity implements SensorEventListener {
             mCamera = null;
 		}
 
-		if (axis == CAMERA_AXIS) {
+		if (mode != MODE_EDGE) {
 	    	// Create a RelativeLayout container that will hold a SurfaceView,
 	        // and set it as the content of our activity.
 			if (haveCameraPermission()) {
@@ -270,14 +279,17 @@ public class TwoPoint extends Activity implements SensorEventListener {
         mFrame.addView(mOverlay);
         mOverlay.bringToFront();
         mOverlay.setPointCount(pointCount);
-        mOverlay.setAxis(axis);
+        mOverlay.setMode(mode);
         
         mOverlay.setOnTouchListener(new View.OnTouchListener() {
 			
 			@Override
 			public boolean onTouch(View v, MotionEvent event) {
-				if (event.getAction() == MotionEvent.ACTION_DOWN) {
+				if (mode != MODE_CLINOMETER && event.getAction() == MotionEvent.ACTION_DOWN) {
 					addAngleWithFeedback();
+				}
+				else {
+					Toast.makeText(TwoPoint.this, "Switch to another mode to measure height.", Toast.LENGTH_LONG).show();
 				}
 				return false;
 			}
@@ -371,9 +383,14 @@ public class TwoPoint extends Activity implements SensorEventListener {
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main, menu);
 		menu.findItem(R.id.zero).setVisible(! zeroed);
-		menu.findItem(R.id.calibrate).setVisible(axis != PHONE_AXIS);
-		menu.findItem(R.id.camera_crosshair_tweak).setVisible(axis != PHONE_AXIS);
-		menu.findItem(R.id.zoom).setVisible(axis != PHONE_AXIS);
+		menu.findItem(R.id.calibrate).setVisible(mode != MODE_EDGE);
+		menu.findItem(R.id.edge_mode).setVisible(mode != MODE_EDGE);
+		menu.findItem(R.id.camera_mode).setVisible(mode != MODE_CAMERA);
+		menu.findItem(R.id.clinometer_mode).setVisible(mode != MODE_CLINOMETER);
+		menu.findItem(R.id.camera_crosshair_tweak).setVisible(mode != MODE_EDGE);
+		menu.findItem(R.id.zoom).setVisible(mode != MODE_EDGE);
+		menu.findItem(R.id.restart).setVisible(mode != MODE_CLINOMETER);
+		menu.findItem(R.id.zero).setVisible(mode != MODE_CLINOMETER);
         return true;
     }
 
@@ -460,7 +477,8 @@ public class TwoPoint extends Activity implements SensorEventListener {
 	@Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle item selection
-        switch (item.getItemId()) {
+		int id = item.getItemId();
+        switch (id) {
         case R.id.restart:
         	pointCount = 0;
         	zeroed = false;
@@ -474,12 +492,16 @@ public class TwoPoint extends Activity implements SensorEventListener {
 			finish();
 			startActivity(intent);
 			return true;
-        case R.id.mode:
-        	if (axis == CAMERA_AXIS)
-        		axis = PHONE_AXIS;
-        	else
-        		axis = CAMERA_AXIS;
-        	mOptions.edit().putBoolean(PREF_CAMERA, axis == CAMERA_AXIS).apply();
+		case R.id.camera_mode:
+		case R.id.edge_mode:
+		case R.id.clinometer_mode:
+			if (id == R.id.camera_mode)
+				mode = MODE_CAMERA;
+			else if (id == R.id.edge_mode)
+				mode = MODE_EDGE;
+			else
+				mode = MODE_CLINOMETER;
+        	mOptions.edit().putInt(PREF_MODE, mode).apply();
         	initViews();
 			safeInvalidateOptionsMenu();
         	return true;
@@ -498,7 +520,7 @@ public class TwoPoint extends Activity implements SensorEventListener {
         	Utils.show(this, "Licenses and Copyrights", "licenses.txt");
         	return true;
 		case R.id.help:
-			Utils.show(this, "Help", "instructions.txt");
+			Utils.show(this, "Help", mode == MODE_CLINOMETER ? "clinometer_instructions.txt" : "instructions.txt");
 			return true;
 		case R.id.zoom:
 			nextZoom();
@@ -526,9 +548,9 @@ public class TwoPoint extends Activity implements SensorEventListener {
 		builder.setView(content);
 		final EditText xtweak = (EditText)content.findViewById(R.id.xtweak);
 		final EditText ytweak = (EditText)content.findViewById(R.id.ytweak);
-		String x = mOptions.getString("X_TWEAK_"+cm, "0");
+		String x = mOptions.getString("X" + PREF_TWEAK+cm, "0");
 		xtweak.setText(x);
-		String y = mOptions.getString("Y_TWEAK_"+cm, "0");
+		String y = mOptions.getString("Y" + PREF_TWEAK+cm, "0");
 		ytweak.setText(y);
 		final Button saveTweak = (Button)content.findViewById(R.id.save_tweak);
 		final Button resetTweak = (Button)content.findViewById(R.id.reset_tweak);
@@ -550,8 +572,8 @@ public class TwoPoint extends Activity implements SensorEventListener {
 						throw new Exception();
 					}
 					SharedPreferences.Editor ed = mOptions.edit();
-					ed.putString("X_TWEAK_"+cm, String.valueOf(xtweak.getText()));
-					ed.putString("Y_TWEAK_"+cm, String.valueOf(ytweak.getText()));
+					ed.putString("X" + PREF_TWEAK + cm, String.valueOf(xtweak.getText()));
+					ed.putString("Y" + PREF_TWEAK + cm, String.valueOf(ytweak.getText()));
 					ed.apply();
 					dialog.cancel();
 				} catch (Exception e) {
@@ -560,9 +582,10 @@ public class TwoPoint extends Activity implements SensorEventListener {
 			}
 		});
 		xtweak.requestFocus();
-		dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
 		Log.v("twopoint", "show tweak");
 		dialog.show();
+		Window w = dialog.getWindow();
+		w.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
 	}
 
 	@Override

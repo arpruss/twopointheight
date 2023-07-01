@@ -227,7 +227,7 @@ class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
     public int crosshairDelta(String coordinate) {
         try {
             int cm = mOptions.getInt("CAMERA_NUMBER", 0);
-            double tweak = Double.parseDouble(mOptions.getString(coordinate + "_TWEAK_"+cm, "0"));
+            double tweak = Double.parseDouble(mOptions.getString(coordinate + TwoPoint.PREF_TWEAK + cm, "0"));
             if (coordinate == "X")
                 return (int) (mScaledWidth * tweak);
             else
