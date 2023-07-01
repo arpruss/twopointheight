@@ -76,6 +76,7 @@ public class TwoPoint extends Activity implements SensorEventListener {
     public static final String ANGLE = "angle";
 	public static final String DEVICE_HEIGHT = "devHeight";
 	private static final String PREF_CAMERA = "cameraMode";
+	public static final String PREF_ZOOM = "zoom";
  
 	private CameraPreview mPreview;
     Camera mCamera = null;
@@ -230,8 +231,9 @@ public class TwoPoint extends Activity implements SensorEventListener {
 		return super.onKeyUp(keyCode, event);
 	}
 
+	@SuppressLint("SuspiciousIndentation")
 	protected void initViews() {
-		Log.v("TPH", "setting up views");
+		Log.v("twopoint", "setting up views");
     	if (Build.VERSION.SDK_INT < 9)
     		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 
@@ -370,6 +372,8 @@ public class TwoPoint extends Activity implements SensorEventListener {
         getMenuInflater().inflate(R.menu.main, menu);
 		menu.findItem(R.id.zero).setVisible(! zeroed);
 		menu.findItem(R.id.calibrate).setVisible(axis != PHONE_AXIS);
+		menu.findItem(R.id.camera_crosshair_tweak).setVisible(axis != PHONE_AXIS);
+		menu.findItem(R.id.zoom).setVisible(axis != PHONE_AXIS);
         return true;
     }
 
@@ -496,25 +500,35 @@ public class TwoPoint extends Activity implements SensorEventListener {
 		case R.id.help:
 			Utils.show(this, "Help", "instructions.txt");
 			return true;
+		case R.id.zoom:
+			nextZoom();
+			return true;
         default:
             return super.onOptionsItemSelected(item);
         }
     }
 
+	private void nextZoom() {
+		int zoom = mOptions.getInt(PREF_ZOOM, 1);
+		if (zoom == 8)
+			zoom = 1;
+		else
+			zoom *= 2;
+		mOptions.edit().putInt(PREF_ZOOM, zoom).apply();
+		initViews();
+	}
+
 	private void cameraCrosshairTweak() {
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
 		final int cm = mOptions.getInt("CAMERA_NUMBER", 0);
-		builder.setTitle("Tweak crosshairs for camera "+cm);
+		builder.setTitle("Tweak crosshairs for camera #"+(cm+1));
 		View content = getLayoutInflater().inflate(R.layout.camera_tweak, null);
 		builder.setView(content);
 		final EditText xtweak = (EditText)content.findViewById(R.id.xtweak);
 		final EditText ytweak = (EditText)content.findViewById(R.id.ytweak);
 		String x = mOptions.getString("X_TWEAK_"+cm, "0");
-		Log.v("twopoint x", x);
 		xtweak.setText(x);
-		Log.v("twopoint", "set x");
 		String y = mOptions.getString("Y_TWEAK_"+cm, "0");
-		Log.v("twopoint y", y);
 		ytweak.setText(y);
 		final Button saveTweak = (Button)content.findViewById(R.id.save_tweak);
 		final Button resetTweak = (Button)content.findViewById(R.id.reset_tweak);
@@ -538,7 +552,7 @@ public class TwoPoint extends Activity implements SensorEventListener {
 					SharedPreferences.Editor ed = mOptions.edit();
 					ed.putString("X_TWEAK_"+cm, String.valueOf(xtweak.getText()));
 					ed.putString("Y_TWEAK_"+cm, String.valueOf(ytweak.getText()));
-					ed.commit();
+					ed.apply();
 					dialog.cancel();
 				} catch (Exception e) {
 					Toast.makeText(TwoPoint.this, "Invalid value", Toast.LENGTH_LONG).show();

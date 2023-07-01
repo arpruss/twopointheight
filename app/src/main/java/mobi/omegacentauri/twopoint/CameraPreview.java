@@ -116,21 +116,24 @@ class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
 //            }
 
             // Center the child SurfaceView within the parent.
+            int zoom = mOptions.getInt(TwoPoint.PREF_ZOOM, 1);
             if (width * previewHeight > height * previewWidth) {
                 final int scaledChildWidth = previewWidth * height / previewHeight;
-                child.layout((width - scaledChildWidth) / 2, 0,
-                        (width + scaledChildWidth) / 2, height);
-                mScaledWidth = scaledChildWidth;
-                mScaledHeight = height;
+                mScaledWidth = scaledChildWidth * zoom;
+                mScaledHeight = height * zoom;
+/*                child.layout((width - scaledChildWidth) / 2, 0,
+                        (width + scaledChildWidth) / 2, height); */
                 Log.v(TAG, "scaled Width = "+scaledChildWidth+" height = "+height);
             } else {
                 final int scaledChildHeight = previewHeight * width / previewWidth;
-                child.layout(0, (height - scaledChildHeight) / 2,
-                        width, (height + scaledChildHeight) / 2);
-                mScaledWidth = width;
-                mScaledHeight = scaledChildHeight;
+                /* child.layout(0, (height - scaledChildHeight) / 2,
+                        width, (height + scaledChildHeight) / 2); */
+                mScaledWidth = width * zoom;
+                mScaledHeight = scaledChildHeight * zoom;
                 Log.v(TAG, "scaled Height = "+scaledChildHeight+" width = "+width);
             }
+            child.layout((width - mScaledWidth) / 2, (height - mScaledHeight) / 2,
+                    (width + mScaledWidth) / 2, (height + mScaledHeight) / 2);
         }
     }
 
@@ -240,7 +243,6 @@ class CameraPreview extends ViewGroup implements SurfaceHolder.Callback {
         // the preview.
     	mCamera.stopPreview();
     	Log.v(TAG, "setPreviewSize "+mPreviewSize.width+"x"+mPreviewSize.height);
-
     	
     	try {
     		Log.v(TAG, "setting "+mPreviewSize.width+" "+mPreviewSize.height);

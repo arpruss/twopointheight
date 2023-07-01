@@ -4,7 +4,7 @@ convert icon512.png -resize 72x72 app/src/main/res/drawable-hdpi/icon.png
 convert icon512.png -resize 48x48 app/src/main/res/drawable-mdpi/icon.png
 convert icon512.png -resize 36x36 app/src/main/res/drawable-ldpi/icon.png
 
-for x in cameraswitch reset help menu ; do
+for x in cameraswitch reset help menu zoom ; do
     convert $x.png -resize 96x96 app/src/main/res/drawable-xxhdpi/$x.png
     convert $x.png -resize 72x72 app/src/main/res/drawable-xhdpi/$x.png
     convert $x.png -resize 48x48 app/src/main/res/drawable-hdpi/$x.png

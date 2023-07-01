@@ -10,14 +10,19 @@
         android:showAsAction="always"
         android:icon="@drawable/cameraswitch"
         />
+    <item android:id="@+id/zoom"
+        android:title="Zoom"
+        android:showAsAction="always"
+        android:icon="@drawable/zoom"
+        />
+    <item android:id="@+id/mode"
+        android:title="Sighting mode"
+        android:showAsAction="never"/>
     <item android:id="@+id/calibrate"
         android:title="Calibrate accelerometer"
         android:showAsAction="never"/>
     <item android:id="@+id/camera_crosshair_tweak"
         android:title="Adjust camera crosshairs"
-        android:showAsAction="never"/>
-    <item android:id="@+id/mode"
-        android:title="Sighting mode"
         android:showAsAction="never"/>
     <item android:id="@+id/licenses"
         android:title="Licenses"
