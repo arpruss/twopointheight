@@ -83,6 +83,8 @@ public class TwoPoint extends Activity implements SensorEventListener {
 	private double timeConstant = 0.4f;
 	private long prevSensorTime;
 	double[] gravity = { 0f, 0f, 0f };
+	double[] calibration1 = { 0f, 0f, 1f };
+	double[] calibration2 = { 0f, 0f, 1f };
 	double[] calibration = { 0f, 0f, 1f };
 
 	private boolean zeroed;
@@ -377,16 +379,58 @@ public class TwoPoint extends Activity implements SensorEventListener {
 
 	void calibrate() {
 		AlertDialog alertDialog = new AlertDialog.Builder(this).create();
-		alertDialog.setTitle("Calibrate");
-		alertDialog.setMessage("Put device face up on level surface and press calibrate button.");
-		alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, "Calibrate",
+		alertDialog.setTitle("Calibration Step 1");
+		alertDialog.setMessage("Put device face up on flat surface and press Begin button.");
+		alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, "Begin",
 				new DialogInterface.OnClickListener() {
 					public void onClick(DialogInterface dialog, int which) {
 						double totalGravity = Math.sqrt(gravity[0]*gravity[0]+gravity[1]*gravity[1]+gravity[2]*gravity[2]);
 						if (totalGravity >= 1e-5) {
-							calibration[0] = gravity[0] / totalGravity;
-							calibration[1] = gravity[1] / totalGravity;
-							calibration[2] = gravity[2] / totalGravity;
+							calibration1[0] = gravity[0] / totalGravity;
+							calibration1[1] = gravity[1] / totalGravity;
+							calibration1[2] = gravity[2] / totalGravity;
+							calibrate2();
+						}
+					} });
+		alertDialog.setButton(DialogInterface.BUTTON_NEUTRAL, "Reset",
+				new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int which) {
+						calibration[0] = 0;
+						calibration[1] = 0;
+						calibration[2] = 1;
+						saveCalibration();
+					} });
+		alertDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+			public void onCancel(DialogInterface dialog) {} });
+		alertDialog.show();
+	}
+
+	void calibrate2() {
+		AlertDialog alertDialog = new AlertDialog.Builder(this).create();
+		alertDialog.setTitle("Calibration Step 2");
+		alertDialog.setMessage("Keeping device face up, rotate it 180 degrees and press Finish button.");
+		alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, "Finish",
+				new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int which) {
+						double totalGravity = Math.sqrt(gravity[0]*gravity[0]+gravity[1]*gravity[1]+gravity[2]*gravity[2]);
+						if (totalGravity >= 1e-5) {
+							calibration2[0] = gravity[0] / totalGravity;
+							calibration2[1] = gravity[1] / totalGravity;
+							calibration2[2] = gravity[2] / totalGravity;
+							calibration[0] = calibration1[0] + calibration2[0];
+							calibration[1] = calibration1[1] + calibration2[1];
+							calibration[2] = calibration1[2] + calibration2[2];
+							double total = Math.sqrt(calibration[0]*calibration[0]+calibration[1]*calibration[1]+calibration[2]*calibration[2]);
+							if (total < 1e-6) {
+								calibration[0] = 0;
+								calibration[1] = 0;
+								calibration[2] = 1;
+							}
+							else {
+								calibration[0] /= total;
+								calibration[1] /= total;
+								calibration[2] /= total;
+							}
 							saveCalibration();
 						}
 					} });
