@@ -1,0 +1,30 @@
+<p>To measure the height of a target object you will need to know either 
+your distance to the base of the object or how high your device camera is 
+above the ground, or ideally both.</p>
+<p><img src="measure.png" align="center"/></p>
+<p>
+<ol>
+<li>Point to one end of object (top or bottom) and tap on screen (or press volume).</li>
+<li>Point to other end of object (bottom or top) and tap on screen (or press volume).</li>
+<li>If you know the device camera height <i>h</i>, fill it out in the unit of your choice. (I'm about 1.8 meters tall, so 1.8 is the default; if
+I was working in feet, I would put around 6.)</li>
+<li>If you know the distance <i>d</i> to the target, fill it out. Use the same units.</li>
+<li>You will get the height <i>H</i> of the target object and, if one can calculate it from your data, an estimate for the distance. The units are the same as you
+used for camera height and/or distance.</li>
+</ol>
+</p>
+<p><b>Hints:</b>
+<ul>
+<li>Keep device camera at equal height for both angles.</li>
+<li>Pace out the distance to your target object to get a distance estimate. (My large steps are about a meter or three feet.)</li>
+<li>If you want to know the camera height, just hold your device so the camera is at the top of your head, and use your own height.</li>
+<li>Or for bigger comfort measure how high your nose is off the ground first.</li>
+<li>If the object is far away, your bottom angle will be basically zero. Save yourself aiming at the bottom of the object by tapping 
+the 0&deg; icon.</li>
+<li>For far-away objects, or objects whose bottom is not at ground level, you <i>need</i> a distance estimate.</li>
+<li>To use with the device at ground level, tap the icon to switch to the front camera.</li>
+<li>Instead of sighting with the camera, you can sight with the edge of the device. Tap the right-hand-corner icon and choose "Sighting mode".</li>
+<li>You can also measure the distance to an object that isn't very far away if the ground is level. Stand up. Point to bottom of object and tap. Tap 0&deg; icon. 
+Enter the height of the camera off the ground. Ignore the measured height of the object.</li>
+</ul>
+</p>

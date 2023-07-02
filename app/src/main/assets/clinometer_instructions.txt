@@ -1,0 +1,3 @@
+<p>In clinometer mode, you just get to see the angle of your device relative to vertical (V)
+and relative to ground or horizontal (H). To measure the heights of objects, press the three-line menu
+ icon and select tandard camera mode or Edge mode.</p>
