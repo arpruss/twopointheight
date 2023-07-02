@@ -405,7 +405,7 @@ public class TwoPoint extends Activity implements SensorEventListener {
 	void calibrate() {
 		AlertDialog alertDialog = new AlertDialog.Builder(this).create();
 		alertDialog.setTitle("Calibration Step 1");
-		alertDialog.setMessage("Put device face up on flat surface and press Begin button.");
+		alertDialog.setMessage(Html.fromHtml("<p>Put device face up on flat surface and press Begin button.</p><img src='r0.png'/>", new Utils.ImageGetter(this), null));
 		alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, "Begin",
 				new DialogInterface.OnClickListener() {
 					public void onClick(DialogInterface dialog, int which) {
@@ -435,7 +435,7 @@ public class TwoPoint extends Activity implements SensorEventListener {
 	void calibrate2() {
 		AlertDialog alertDialog = new AlertDialog.Builder(this).create();
 		alertDialog.setTitle("Calibration Step 2");
-		alertDialog.setMessage(Html.fromHtml("<p>Keeping device face up, rotate it 180\u00B0 and press Finish button.</p><img src='r180.png' align='center'/>", new Utils.ImageGetter(this), null));
+		alertDialog.setMessage(Html.fromHtml("<p>Keeping device face up, rotate it 180\u00B0 and press Finish button.</p><img src='r180.png'/>", new Utils.ImageGetter(this), null));
 		alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, "Finish",
 				new DialogInterface.OnClickListener() {
 					public void onClick(DialogInterface dialog, int which) {

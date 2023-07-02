@@ -69,6 +69,7 @@ public class Utils {
 		@Override
 		public Drawable getDrawable(String s) {
 			int id;
+			double scale = 2./3;
 
 			if (s.equals("measure.png")) {
 				id = R.drawable.measure;
@@ -76,12 +77,15 @@ public class Utils {
 			else if (s.equals("r180.png")) {
 				id = R.drawable.r180;
 			}
+			else if (s.equals("r0.png")) {
+				id = R.drawable.r0;
+			}
 			else {
 				return null;
 			}
 			Drawable d = context.getResources().getDrawable(id);
 			DisplayMetrics metrics = context.getResources().getDisplayMetrics();
-			int width = Math.min(metrics.widthPixels,  metrics.heightPixels) * 2 / 3;
+			int width = (int) (Math.min(metrics.widthPixels,  metrics.heightPixels) * scale);
 			int height = width * d.getIntrinsicHeight()/d.getIntrinsicWidth();
 			d.setBounds(0,0,width,height); //d.getIntrinsicWidth(),d.getIntrinsicHeight());
 			return d;
