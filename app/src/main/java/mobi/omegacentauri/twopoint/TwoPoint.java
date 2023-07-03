@@ -188,6 +188,24 @@ public class TwoPoint extends Activity implements SensorEventListener {
 		}
 	}
 
+	public static double safeacos(double x) {
+		if (x<-1)
+			return -Math.PI;
+		else if (x>1)
+			return 0;
+		else
+			return Math.acos(x);
+	}
+
+	public static double safeasin(double x) {
+		if (x<-1)
+			return -Math.PI/2;
+		else if (x>1)
+			return Math.PI/2;
+		else
+			return Math.asin(x);
+	}
+
 
 	@Override
 	public void onSensorChanged(SensorEvent event)
@@ -212,9 +230,9 @@ public class TwoPoint extends Activity implements SensorEventListener {
 		}
 		else {
 			if (mode == MODE_EDGE)
-		  		curAngle = (float) (Math.asin(gravity[1]/total));
+		  		curAngle = safeasin(gravity[1]/total);
 			else {
-				curAngle = Math.PI/2-Math.acos((gravity[0]*calibration[0]+gravity[1]*calibration[1]+gravity[2]*calibration[2])/total);
+				curAngle = safeasin((gravity[0]*calibration[0]+gravity[1]*calibration[1]+gravity[2]*calibration[2])/total);
 				if (mCamera != null && mCameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_BACK)
 					curAngle = -curAngle;
 			}
