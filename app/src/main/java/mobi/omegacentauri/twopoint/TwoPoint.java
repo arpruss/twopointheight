@@ -303,11 +303,8 @@ public class TwoPoint extends Activity implements SensorEventListener {
 			
 			@Override
 			public boolean onTouch(View v, MotionEvent event) {
-				if (mode != MODE_CLINOMETER && event.getAction() == MotionEvent.ACTION_DOWN) {
+				if (event.getAction() == MotionEvent.ACTION_DOWN) {
 					addAngleWithFeedback();
-				}
-				else {
-					Toast.makeText(TwoPoint.this, "Switch to another mode to measure height.", Toast.LENGTH_LONG).show();
 				}
 				return false;
 			}
@@ -346,6 +343,11 @@ public class TwoPoint extends Activity implements SensorEventListener {
 	}
 
     protected void addAngleWithFeedback(double angle) {
+		if (mode == MODE_CLINOMETER) {
+			Toast.makeText(TwoPoint.this, "Switch to another mode to measure height.", Toast.LENGTH_LONG).show();
+			return;
+		}
+
 		mOverlay.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
 		mBeep.stop();
 		mBeep.reloadStaticData();
